@@ -20,7 +20,7 @@ class MapModel:
                     if gid == 0:
                         continue
                     props = self.map_data.get_tile_properties_by_gid(gid)
-                    pos = (x * self.map_data.tilewidth, y * self.map_data.tileheight)
+                    pos = (x * self.map_data.tilewidth + 32, y * self.map_data.tileheight + 32)
 
                     if props and "frames" in props:
                         AnimatedTile(pos, gid, self.map_data, self.sprite_group, self.animated_group)

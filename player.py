@@ -57,32 +57,39 @@ class Player(pygame.sprite.Sprite):
         if self.direction.length_squared() > 0:
             self.direction = self.direction.normalize()
 
-        new_x = self.rect.x + self.direction.x * self.speed * dt
-        new_y = self.rect.y + self.direction.y * self.speed * dt
-
         # --- Trục X ---
-        future_rect = self.rect.copy()
-        future_rect.x = new_x
-        if not self.collides(future_rect, collision_matrix):
-            self.rect.x = new_x
+        self.rect.x += self.direction.x * self.speed * dt
+        if self.collides(self.rect, collision_matrix):
+            if self.direction.x > 0:  # đi sang phải
+                self.rect.right = (self.rect.right // TILE_SIZE) * TILE_SIZE
+            elif self.direction.x < 0:  # đi sang trái
+                self.rect.left = (self.rect.left // TILE_SIZE + 1) * TILE_SIZE
 
         # --- Trục Y ---
-        future_rect = self.rect.copy()
-        future_rect.y = new_y
-        if not self.collides(future_rect, collision_matrix):
-            self.rect.y = new_y
+        self.rect.y += self.direction.y * self.speed * dt
+        if self.collides(self.rect, collision_matrix):
+            if self.direction.y > 0:  # đi xuống
+                self.rect.bottom = (self.rect.bottom // TILE_SIZE) * TILE_SIZE
+            elif self.direction.y < 0:  # đi lên
+                self.rect.top = (self.rect.top // TILE_SIZE + 1) * TILE_SIZE
+
 
     def collides(self, rect, collision_matrix):
         rows, cols = collision_matrix.shape
-        top_left = (rect.left // TILE_SIZE, rect.top // TILE_SIZE)
-        bottom_right = (rect.right // TILE_SIZE, rect.bottom // TILE_SIZE)
 
-        for y in range(top_left[1], bottom_right[1] + 1):
-            for x in range(top_left[0], bottom_right[0] + 1):
+        # Xác định tile mà player đang chiếm
+        left = rect.left // TILE_SIZE
+        right = (rect.right - 1) // TILE_SIZE
+        top = rect.top // TILE_SIZE
+        bottom = (rect.bottom - 1) // TILE_SIZE
+
+        for y in range(top, bottom + 1):
+            for x in range(left, right + 1):
                 if 0 <= x < cols and 0 <= y < rows:
-                    if collision_matrix[y][x] == 1:
+                    if collision_matrix[y][x] == 1:  # gặp tường
                         return True
         return False
+
 
     def animate(self, dt):
         if self.direction.length_squared() > 0:
