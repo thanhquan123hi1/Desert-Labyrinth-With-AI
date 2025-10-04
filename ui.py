@@ -8,32 +8,40 @@ class UIManager:
             self.font = font
 
     def fade_transition(self, screen, clock, res, duration=1000):
-        """Hiệu ứng fade (đen -> sáng) khi chuyển cảnh"""
         fade_surface = pygame.Surface(res)
         fade_surface.fill((0, 0, 0))
 
+        half = duration // 2
         start_time = pygame.time.get_ticks()
-        running = True
-        while running:
+
+        # ---- Fade Out (rõ -> đen) ----
+        while True:
             now = pygame.time.get_ticks()
             elapsed = now - start_time
-            if elapsed > duration:
-                running = False
-                elapsed = duration
+            if elapsed > half:
+                break
 
-            # alpha từ 0 -> 255 -> 0
-            if elapsed <= duration // 2:
-                alpha = int(255 * (elapsed / (duration // 2)))
-            else:
-                alpha = int(255 * (1 - (elapsed - duration // 2) / (duration // 2)))
-
+            alpha = int(255 * (elapsed / half))   # tăng alpha từ 0 -> 255
             fade_surface.set_alpha(alpha)
             screen.blit(fade_surface, (0, 0))
-
             pygame.display.flip()
             clock.tick(60)
 
-    # ================= PANEL =================
+        # ---- Fade In (đen -> rõ) ----
+        start_time = pygame.time.get_ticks()
+        while True:
+            now = pygame.time.get_ticks()
+            elapsed = now - start_time
+            if elapsed > half:
+                break
+
+            alpha = int(255 * (1 - elapsed / half) * 255)  # giảm alpha từ 255 -> 0
+            fade_surface.set_alpha(alpha)
+            screen.blit(fade_surface, (0, 0))
+            pygame.display.flip()
+            clock.tick(60)
+
+
     def draw_panel(self, surface, x, y, width, height, title=None):
         rect = pygame.Rect(x, y, width, height)
         pygame.draw.rect(surface, (230, 230, 230), rect)  # nền
@@ -43,7 +51,6 @@ class UIManager:
             surface.blit(text, (x + 10, y + 10))
         return rect
 
-    # ================= BUTTON =================
     def draw_button(self, surface, x, y, width, height, text, mouse_pos, mouse_click):
         rect = pygame.Rect(x, y, width, height)
         color = (200, 200, 200)
@@ -58,7 +65,6 @@ class UIManager:
             return True
         return False
 
-    # ================= DROPMENU =================
     def draw_dropmenu(self, surface, x, y, width, height, options, state, mouse_pos, mouse_click):
         rect = pygame.Rect(x, y, width, height)
         pygame.draw.rect(surface, (240, 240, 240), rect)
@@ -86,38 +92,51 @@ class UIManager:
                     chosen = opt
         return chosen
 
-    # ================= IMAGE BUTTON =================
-    def draw_image_button(self, surface, x, y, images, mouse_pos, mouse_pressed):
-        if not hasattr(self, "_cache"):
-            self._cache = {}
-        if images["normal"] not in self._cache:
-            self._cache[images["normal"]]  = pygame.image.load(images["normal"]).convert_alpha()
-            self._cache[images["hover"]]   = pygame.image.load(images["hover"]).convert_alpha()
-            self._cache[images["pressed"]] = pygame.image.load(images["pressed"]).convert_alpha()
+    def draw_image_button(self, surface, x, y,
+                        img_normal, img_hover, img_pressed,
+                        mouse_pos, mouse_click,
+                        widthscale=1.0, heightscale=1.0,
+                        text=None,
+                        text_normal=(255, 255, 255),
+                        text_hover=(255, 255, 0),
+                        text_pressed=(255, 255, 255)):
+        # scale ảnh
+        w = int(img_normal.get_width() * widthscale)
+        h = int(img_normal.get_height() * heightscale)
 
-        img_normal  = self._cache[images["normal"]]
-        img_hover   = self._cache[images["hover"]]
-        img_pressed = self._cache[images["pressed"]]
+        normal_scaled = pygame.transform.scale(img_normal, (w, h))
+        hover_scaled = pygame.transform.scale(img_hover, (w, h))
+        pressed_scaled = pygame.transform.scale(img_pressed, (w, h))
 
-        rect = img_normal.get_rect(center=(x, y))
+        rect = pygame.Rect(x, y, w, h)
 
-        clicked = False
+        # chọn ảnh + màu chữ theo trạng thái
         if rect.collidepoint(mouse_pos):
-            if mouse_pressed[0]:
-                surface.blit(img_pressed, rect)
-                self._was_pressed = True
-            else:
-                surface.blit(img_hover, rect)
-                if getattr(self, "_was_pressed", False):
-                    clicked = True
-                self._was_pressed = False
+            if pygame.mouse.get_pressed()[0]:  # đang giữ chuột
+                surface.blit(pressed_scaled, (x, y))
+                text_color = text_pressed
+            else:  # hover
+                surface.blit(hover_scaled, (x, y))
+                text_color = text_hover
         else:
-            surface.blit(img_normal, rect)
+            surface.blit(normal_scaled, (x, y))
+            text_color = text_normal
 
-        return clicked
+        # vẽ chữ vào giữa button
+        if text:
+            text_surf = self.font.render(text, True, text_color)
+            surface.blit(text_surf, (
+                rect.centerx - text_surf.get_width() // 2,
+                rect.centery - text_surf.get_height() // 1   
+            ))
 
+        # click thực sự
+        if mouse_click and rect.collidepoint(mouse_pos):
+            return True
+        return False
 
-# ================= DEMO =================
+    
+
 if __name__ == "__main__":
     pygame.init()
     screen = pygame.display.set_mode((600, 600))
@@ -146,7 +165,6 @@ if __name__ == "__main__":
         # Normal button
         if ui.draw_button(screen, 70, 100, 120, 40, "Run", mouse_pos, mouse_click):
             print("Run clicked")
-
         # Dropmenu
         selected = ui.draw_dropmenu(screen, 70, 160, 150, 30,
                                     ["BFS", "DFS", "A*"], drop_state,
@@ -154,13 +172,7 @@ if __name__ == "__main__":
         if selected:
             print("Selected:", selected)
 
-        # Image button demo (bỏ width, height để không bị lỗi)
-        if ui.draw_image_button(screen, 300, 500,
-                                {"normal":"Resources/Menu/play_nor.png",
-                                 "hover":"Resources/Menu/play_Hover.png",
-                                 "pressed":"Resources/Menu/play_Pressed.png"},
-                                mouse_pos, mouse_pressed):
-            print("Play button clicked")
+
 
         pygame.display.flip()
     pygame.quit()

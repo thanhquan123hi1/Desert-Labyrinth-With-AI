@@ -3,7 +3,7 @@ from settings import RES
 from map_model import MapModel
 from player import Player
 from ui import UIManager
-from menu import Menu
+from Package_Menu import Menu, Options
 
 
 class App:
@@ -14,7 +14,7 @@ class App:
         pygame.display.set_caption("MAZE")
         self.clock = pygame.time.Clock()
         
-        self.map_model = MapModel("Resources/Maps/Map1.tmx")
+        self.map_model = MapModel("Resources/Maps/Map2.tmx")
         self.ui = UIManager()
         self.player_group = pygame.sprite.Group()
         self.player = Player((96, 96), self.player_group)  
@@ -52,7 +52,7 @@ if __name__ == "__main__":
 
     if choice == "START GAME":
         ui = UIManager()
-        ui.fade_transition(screen, clock, RES, 1500)  # hiệu ứng 1.5s
+        ui.fade_transition(screen, clock, RES, 1000)
         app = App()
         app.run()
 

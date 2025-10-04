@@ -53,5 +53,4 @@ class MapModel:
                             matrix[y][x] = 1
                 break
         print(matrix)
-
         return matrix
