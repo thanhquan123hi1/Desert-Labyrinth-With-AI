@@ -1,8 +1,12 @@
 import pygame, sys
 
+from AndOrSearch import AndOrSearch
 from Astar import AStar
 from BFS import BFS
+from BacktrackingAC3 import BacktrackingAC3
+from BacktrackingForwardchecking import BacktrackingForwardChecking
 from BeamSearch import BeamSearch
+from Belief import Belief
 from Button import Button
 from DFS import DFS
 from Dropdown import Dropdown
@@ -14,6 +18,10 @@ from player import Player
 
 # 2: vị trí nhân vật
 # 3: vị trí goal
+
+
+
+
 
 class App:   #Để chạy chương trình chính(xử lý sự kiện)
     def __init__(self):
@@ -36,7 +44,7 @@ class App:   #Để chạy chương trình chính(xử lý sự kiện)
         self.list_tt, self.duong_di = [], []
         self.step_index = 0
         self.path_index = 0
-        self.option_algs = ["BFS", "DFS", "Greedy", "AStar", "BeamSearch", "SimulatedAnnealing"]
+        self.option_algs = ["BFS", "DFS", "Greedy", "AStar", "BeamSearch", "SimulatedAnnealing", "AndOrSearch", "Belief", "BacktrackingForwardChecking", "BacktrackingAC3"]
         # Dropdown chọn thuật toán
         font = pygame.font.SysFont(None, 24)
         self.dropdown = Dropdown(31*32, 1*32, 150, 30, font, (50, 50, 50), (100, 100, 100), self.option_algs)
@@ -76,8 +84,16 @@ class App:   #Để chạy chương trình chính(xử lý sự kiện)
             algo = BeamSearch(self.start_matrix)
         elif algo_name == "SimulatedAnnealing":
             algo = SimulatedAnnealing(self.start_matrix)
-        elif algo_name == "DFS":
-            algo = DFS(self.start_matrix)
+        elif algo_name == "AndOrSearch":
+            algo = AndOrSearch(self.start_matrix)
+        elif algo_name == "Belief":
+            algo = Belief(self.start_matrix)
+        elif algo_name == "BacktrackingForwardChecking":
+            algo = BacktrackingForwardChecking(self.start_matrix)
+        elif algo_name == "BacktrackingAC3":
+            algo = BacktrackingAC3(self.start_matrix)
+        elif algo_name == "SimulatedAnnealing":
+            algo = SimulatedAnnealing(self.start_matrix)
         else:
             return
         self.list_tt, self.duong_di = algo.chay_thuattoan()
