@@ -3,9 +3,10 @@ import pygame
 class UIManager:
     def __init__(self, font=None):
         if font is None:
-            self.font = pygame.font.SysFont("Arial", 20)
+            self.font = pygame.font.Font("Resources/Font/pixel3.ttf", 20)
         else:
             self.font = font
+        self.panel_img = pygame.image.load("Resources/Menu/panel.png").convert_alpha()
 
     def fade_transition(self, screen, clock, res, duration=1000):
         fade_surface = pygame.Surface(res)
@@ -41,15 +42,22 @@ class UIManager:
             pygame.display.flip()
             clock.tick(60)
 
+    
 
     def draw_panel(self, surface, x, y, width, height, title=None):
-        rect = pygame.Rect(x, y, width, height)
-        pygame.draw.rect(surface, (230, 230, 230), rect)  # nền
-        pygame.draw.rect(surface, (0, 0, 0), rect, 2)    # viền
+        # scale ảnh panel theo kích thước yêu cầu
+        panel_scaled = pygame.transform.scale(self.panel_img, (width, height))
+
+        # vẽ ảnh panel lên surface
+        surface.blit(panel_scaled, (x, y))
+
+        # vẽ title nếu có
         if title:
             text = self.font.render(title, False, (0, 0, 0))
-            surface.blit(text, (x + 10, y + 10))
-        return rect
+            surface.blit(text, (x + 50, y + 20))
+
+        # trả về rect panel để tiện dùng
+        return pygame.Rect(x, y, width, height)
 
     def draw_button(self, surface, x, y, width, height, text, mouse_pos, mouse_click):
         rect = pygame.Rect(x, y, width, height)

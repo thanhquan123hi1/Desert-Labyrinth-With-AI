@@ -17,7 +17,6 @@ class Menu:
         # hiệu ứng hạt cát
         self.particles = [[random.randint(0, RES[0]), random.randint(0, RES[1]),
                            random.uniform(0.5, 2.0), random.randint(2, 4)] for _ in range(50)]
-        
         # image buttons
         self.imgNormal = pygame.image.load("Resources/Menu/buttons/btn_bhover.png").convert_alpha()
         self.imgHover = pygame.image.load("Resources/Menu/buttons/btn_yhover.png").convert_alpha()
