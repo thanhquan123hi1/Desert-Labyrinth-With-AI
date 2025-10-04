@@ -38,9 +38,13 @@ class AnimatedTile(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=pos)
 
     def update(self, dt):
-        if len(self.frames) > 1:
-            self.current_time += dt
+        if len(self.frames) > 1:  # Nếu tile có nhiều hơn 1 frame → là tile động
+            self.current_time += dt  # dt là thời gian trôi qua kể từ lần update trước (giây)
+
+            # Nếu đã đủ thời gian hiển thị frame hiện tại
             if self.current_time >= self.durations[self.frame_index]:
-                self.current_time = 0
+                self.current_time = 0  # reset bộ đếm thời gian
+                # Chuyển sang frame tiếp theo (vòng quanh nếu hết frames)
                 self.frame_index = (self.frame_index + 1) % len(self.frames)
+                # Cập nhật hình hiển thị hiện tại của sprite
                 self.image = self.frames[self.frame_index]

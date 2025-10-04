@@ -35,7 +35,7 @@ class Player(pygame.sprite.Sprite):
             frame = sprite_sheet.subsurface(
                 pygame.Rect(i * self.frame_width, 0, self.frame_width, self.frame_height)
             )
-            frame = pygame.transform.scale(frame, (64, 64))
+            frame = pygame.transform.scale(frame, (40, 40))
             frames.append(frame)
         return frames
 
