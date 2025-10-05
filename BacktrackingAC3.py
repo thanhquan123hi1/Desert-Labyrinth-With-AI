@@ -1,7 +1,14 @@
+import random
+
 import numpy as np
 import time
-from collections import deque
 from pympler import asizeof
+from collections import deque
+
+# tt: trạng thái
+# 2: vị trí nhân vật (start)
+# 3: vị trí goal
+
 matrix = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
@@ -25,206 +32,33 @@ matrix = [
     [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 3],
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ]
-# DI chuyển 4 hướng
+
 DICHUYEN = [(0,1),(1,0),(0,-1),(-1,0)]
 
 class BacktrackingAC3:
-    def __init__(self, ma_tran=None, LOOKAHEAD=3):
-        self.tt_bandau = np.array(ma_tran if ma_tran is not None else matrix)
+    def __init__(self, ma_tran=None):
+        if ma_tran is None:
+            ma_tran = matrix
+        self.tt_bandau = np.array(ma_tran)
         self.num_rows, self.num_cols = self.tt_bandau.shape
 
-        # kết quả và thống kê (giữ theo phong cách BFS)
-        self.list_tt_duyet = []   # danh sách tuple (row,col) đã duyệt (dùng để hiển thị states visited theo thứ tự)
-        self.duong_di = []        # đường đi (list of tuple) khi tìm thấy goal
+        # lưu thứ tự các trạng thái đã duyệt
+        self.list_tt_duyet = []
+        # lưu đường đi
+        self.duong_di = []
 
-        # thống kê
-        self.So_tt_daduyet = 0
-        self.So_tt_dasinh = 0
-        self.Kichthuoc_bonho = 0
-        self.Kichthuoc_bonho_MB = 0.0
-        self.Dodai_duongdi = 0
-        self.execution_time = 0
+        # Các thông số để so sánh
+        self.So_tt_daduyet = 0  # số trạng thái đã duyệt
+        self.So_tt_dasinh = 0  # số trạng thái đã sinh/được xem xét
+        self.Kichthuoc_bonho = 0  # Số tt ở thời điểm stack max
+        self.Kichthuoc_bonho_MB = 0.0  # kích thước bộ nhớ max
+        self.Dodai_duongdi = 0  # chiều dài đường đi
+        self.execution_time = 0  # thời gian thực thi
 
-        # param thuật toán
-        self.LOOKAHEAD = max(1, int(LOOKAHEAD))
-
-        # vị trí start/goal cached
-        self.start = self.tim_vitri(2)[0]
-        self.goal = self.tim_vitri(3)[0]
-
-    # 1. Tìm vị trí có giá trị trong ma trận (giá trị cần xét)
     def tim_vitri(self, gia_tri):
         list_toado = np.argwhere(self.tt_bandau == gia_tri)
         return [tuple(p) for p in list_toado]
 
-    # 2. Kiểm tra ô hợp lệ (trong biên và không phải tường)
-    def hop_le(self, row, col):
-        return 0 <= row < self.num_rows and 0 <= col < self.num_cols and self.tt_bandau[row, col] != 1
-
-    # 3. Sinh các hàng xóm hợp lệ chưa thăm
-    def sinh_tt_con(self, x, y, visited):
-        list_tt_con = []
-        for i,j in DICHUYEN:
-            x1, y1 = x + i, y + j
-            if self.hop_le(x1, y1) and (x1, y1) not in visited:
-                list_tt_con.append((x1, y1))
-        return list_tt_con
-
-    # 4. Tìm đường đi từ start đến goal (từ cha dict)
-    def tim_duongdi(self, start, goal, cha):
-        duong_di = []
-        cur = goal
-        while cur != start:
-            duong_di.append(cur)
-            cur = cha[cur]
-        duong_di.append(start)
-        duong_di.reverse()
-        return duong_di
-
-    # -------- AC-3 và revise cho lookahead domains ----------
-    def ac3(self, domains, constraints):
-        queue = deque(constraints)
-        while queue:
-            xi, xj = queue.popleft()
-            if self.revise(domains, xi, xj):
-                if not domains[xi]:
-                    return False
-                for xk in domains.keys():
-                    if xk != xi and xk != xj:
-                        queue.append((xk, xi))
-        return True
-
-    def revise(self, domains, xi, xj):
-        revised = False
-        to_remove = []
-        for vi in domains[xi]:
-            # kiểm tra có ít nhất 1 u trong domains[xj] sao cho vi và u là adjacent
-            ok = False
-            for vj in domains[xj]:
-                if abs(vi[0] - vj[0]) + abs(vi[1] - vj[1]) == 1:
-                    ok = True
-                    break
-            if not ok:
-                to_remove.append(vi)
-        for v in to_remove:
-            domains[xi].remove(v)
-            revised = True
-        return revised
-
-    # Tạo domains lookahead cho một node hiện tại
-    def build_lookahead_domains(self, current, visited, lookahead):
-        domains = {}
-        frontier = {current}
-        forbidden = set(visited)
-        for d in range(1, lookahead+1):
-            next_frontier = set()
-            candidates = set()
-            for (r,c) in frontier:
-                for dr,dc in DICHUYEN:
-                    nr, nc = r+dr, c+dc
-                    if self.hop_le(nr,nc) and (nr,nc) not in forbidden:
-                        candidates.add((nr,nc))
-                        next_frontier.add((nr,nc))
-            domains[f's{d}'] = list(candidates)
-            frontier = next_frontier
-        return domains
-
-    # -------- Backtracking + AC3 chính ----------
-    def chay_thuattoan(self):
-        """
-        Chạy thuật toán Backtracking + AC3.
-        Trả về: self.list_tt_duyet, self.duong_di
-        """
-        start_time = time.time()
-        start = self.start
-        goal = self.goal
-
-        # reset stats
-        self.list_tt_duyet = []
-        self.duong_di = []
-        self.So_tt_daduyet = 0
-        self.So_tt_dasinh = 0
-        self.Kichthuoc_bonho = 0
-        self.Kichthuoc_bonho_MB = 0.0
-        self.Dodai_duongdi = 0
-        self.execution_time = 0
-
-        visited = set()
-        cha = {}
-
-        # recursion limit path length to avoid pathological: at most num_rows*num_cols
-        MAX_DEPTH = self.num_rows * self.num_cols
-
-        found = self._backtrack(start, visited, cha, start_time, 0, MAX_DEPTH)
-        self.execution_time = time.time() - start_time
-        if found:
-            self.duong_di = self.tim_duongdi(start, goal, cha)
-            self.Dodai_duongdi = len(self.duong_di)
-        return self.list_tt_duyet, self.duong_di
-
-    def _backtrack(self, current, visited, cha, start_time, depth, MAX_DEPTH):
-        # cập nhật thống kê khi "duyệt" node current
-        self.list_tt_duyet.append(current)
-        self.So_tt_daduyet += 1
-        self.Kichthuoc_bonho = max(self.Kichthuoc_bonho, depth+1)
-        queue_size_MB = asizeof.asizeof(self.list_tt_duyet) / (1024 * 1024)
-        self.Kichthuoc_bonho_MB = max(self.Kichthuoc_bonho_MB, queue_size_MB)
-
-        # nếu đến goal
-        if current == self.goal:
-            return True
-
-        if depth >= MAX_DEPTH:
-            return False
-
-        visited.add(current)
-
-        # Sinh các hành động (neighbors) theo phong cách bạn dùng
-        neighbors = self.sinh_tt_con(current[0], current[1], visited)
-        # Lọc: có thể shuffle để random (càng giống backtracking 8 con xe).
-
-        for nb in neighbors:
-            # tăng số trạng thái đã sinh
-            self.So_tt_dasinh += 1
-
-
-            domains = self.build_lookahead_domains(nb, visited | {nb}, self.LOOKAHEAD)
-
-            inconsistent = any(len(domains[k]) == 0 for k in domains)
-            if inconsistent:
-
-                continue
-
-            constraints = []
-            keys = sorted(domains.keys(), key=lambda x: int(x[1:]))
-            for i in range(len(keys)-1):
-                constraints.append((keys[i], keys[i+1]))
-                constraints.append((keys[i+1], keys[i]))  # hai chiều để mạnh hơn
-
-
-            domains_copy = {k: v.copy() for k,v in domains.items()}
-            ac3_ok = True
-            if constraints:
-                ac3_ok = self.ac3(domains_copy, constraints)
-
-            if not ac3_ok:
-                # prune neighbor nb
-                continue
-
-            # Nếu AC3 cho phép, tiếp tục đi sâu
-            cha[nb] = current
-            found = self._backtrack(nb, visited, cha, start_time, depth+1, MAX_DEPTH)
-            if found:
-                return True
-            # quay lui
-            del cha[nb]
-            # tiếp tục thử neighbor khác
-
-        visited.remove(current)
-        # Nếu không tìm thấy từ current, quay lui
-        return False
-
-    # Thông số trả về giống BFS
     def thong_so(self):
         return {
             "So tt da duyet": self.So_tt_daduyet,
@@ -235,12 +69,115 @@ class BacktrackingAC3:
             "Execution time (s)": round(self.execution_time, 6)
         }
 
+    def is_valid_move(self, x, y, visited):
+        if 0 <= x < self.num_rows and 0 <= y < self.num_cols:
+            if self.tt_bandau[x, y] != 1 and (x, y) not in visited:
+                return True
+        return False
 
-mb = BacktrackingAC3(LOOKAHEAD=3)
-a, b = mb.chay_thuattoan()
-# ép kiểu tuple sang int giống BFS (thường đã là int)
-a = [(int(r), int(c)) for r,c in a]
-b = [(int(r), int(c)) for r,c in b]
-print("Trạng thái đã duyệt qua: ", a)
-print("Đường đi: ", b)
-print("Thông số:", mb.thong_so())
+    # --- AC-3 ---
+    def tao_domain(self, da_di):
+        domain = {}
+        for r in range(self.num_rows):
+            for c in range(self.num_cols):
+                if (r, c) in da_di or self.tt_bandau[r, c] == 1:
+                    domain[(r, c)] = {0}
+                else:
+                    domain[(r, c)] = {0, 1}
+        return domain
+
+    def tao_rang_buoc(self):
+        queue = deque()
+        for r in range(self.num_rows):
+            for c in range(self.num_cols):
+                for dr, dc in DICHUYEN:
+                    nr, nc = r + dr, c + dc
+                    if 0 <= nr < self.num_rows and 0 <= nc < self.num_cols:
+                        queue.append(((r, c), (nr, nc)))
+        return queue
+
+    def revise(self, domain, xi, xj):
+        revised = False
+        if 1 in domain[xi]:
+            if not any(v == 1 for v in domain[xj]):
+                domain[xi].remove(1)
+                revised = True
+        return revised
+
+    def ac3(self, domain):
+        queue = self.tao_rang_buoc()
+        while queue:
+            xi, xj = queue.popleft()
+            if self.revise(domain, xi, xj):
+                if len(domain[xi]) == 0:
+                    return False
+                r, c = xi
+                for dr, dc in DICHUYEN:
+                    nr, nc = r + dr, c + dc
+                    if (nr, nc) != xj and 0 <= nr < self.num_rows and 0 <= nc < self.num_cols:
+                        queue.append(((nr, nc), xi))
+        return True
+
+    # --- Backtracking + AC3 ---
+    def backtrack(self, cur, goal, visited, path, domain):
+        self.So_tt_daduyet += 1
+        self.list_tt_duyet.append(cur)
+        visited.add(cur)
+        path.append(cur)
+
+        self.Kichthuoc_bonho = max(self.Kichthuoc_bonho, len(path))
+        self.Kichthuoc_bonho_MB = max(self.Kichthuoc_bonho_MB, asizeof.asizeof(path)/1024/1024)
+
+        if cur == goal:
+            self.duong_di = path.copy()
+            self.Dodai_duongdi = len(path)
+            return True
+
+        # Tạo domain mới cho bước tiếp theo
+        domain_moi = {k:v.copy() for k,v in domain.items()}
+        domain_moi[cur] = {1}
+        if not self.ac3(domain_moi):
+            visited.remove(cur)
+            path.pop()
+            return False
+
+        # Lọc bước đi hợp lệ
+        valid_moves = []
+        for dx, dy in DICHUYEN:
+            new_x, new_y = cur[0] + dx, cur[1] + dy
+            if self.is_valid_move(new_x, new_y, visited):
+                valid_moves.append((dx, dy))
+
+        while valid_moves:
+            idx = random.randint(0, len(valid_moves)-1)
+            dx, dy = valid_moves.pop(idx)
+            new_pos = (cur[0]+dx, cur[1]+dy)
+            self.So_tt_dasinh += 1
+            if self.backtrack(new_pos, goal, visited, path, domain_moi):
+                return True
+
+        visited.remove(cur)
+        path.pop()
+        return False
+
+    def chay_thuattoan(self):
+        start_time = time.time()
+        start = self.tim_vitri(2)[0]
+        goal = self.tim_vitri(3)[0]
+        visited = set()
+        path = []
+        domain = self.tao_domain(visited)
+
+        self.backtrack(start, goal, visited, path, domain)
+        self.execution_time = time.time() - start_time
+        return self.list_tt_duyet, self.duong_di
+
+
+# ----- Chạy -----
+print("\n", "BacktrackingAC3".center(60, "-"))
+solver = BacktrackingAC3()
+visited, path = solver.chay_thuattoan()
+print("States visited:", [(int(r), int(c)) for r, c in visited])
+print("Path:", [(int(r), int(c)) for r, c in path])
+print("Stats:", solver.thong_so())
+

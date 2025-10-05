@@ -19,10 +19,6 @@ from player import Player
 # 2: vị trí nhân vật
 # 3: vị trí goal
 
-
-
-
-
 class App:   #Để chạy chương trình chính(xử lý sự kiện)
     def __init__(self):
         #Các khởi tạo màn hình pygame đơn giản

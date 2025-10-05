@@ -79,10 +79,73 @@ class AStar:
         self.list_tt_duyet.append((row, col))
 
     # 6. Heuristic Manhattan
-    def heuristic(self, vitri):
+    def lookahead_penalty(self, row, col, depth, visited=None, weight=1.0):
+        if visited is None:
+            visited = set()
+        if depth == 0:
+            return 0
+
+        visited.add((row, col))
+        moves = []
+        for dr, dc in DICHUYEN:
+            r1, c1 = row + dr, col + dc
+            if 0 <= r1 < self.num_rows and 0 <= c1 < self.num_cols:
+                if self.tt_bandau[r1, c1] != 1 and (r1, c1) not in visited:
+                    moves.append((r1, c1))
+
+        # penalty theo số bước khả thi hiện tại
+        if len(moves) == 0:
+            penalty = 10 * weight
+        elif len(moves) == 1:
+            penalty = 5 * weight
+        elif len(moves) == 2:
+            penalty = 3 * weight
+        elif len(moves) == 3:
+            penalty = 1 * weight
+        else:
+            penalty = 0
+        # đệ quy lookahead nhưng giảm trọng số theo độ sâu
+        if moves:
+            next_penalties = [
+                self.lookahead_penalty(r1, c1, depth - 1, visited.copy(), weight * 0.6)
+                for r1, c1 in moves
+            ]
+            # chọn nhánh tệ nhất
+            penalty += max(next_penalties)
+        return penalty
+
+    def heuristic(self, vitri, lookahead_steps=3):
         goal = self.tim_vitri(3)[0]
         row, col = vitri
-        return abs(row - goal[0]) + abs(col - goal[1])
+
+        # Manhattan distance
+        manhattan = abs(row - goal[0]) + abs(col - goal[1])
+
+        # Dead-end penalty vị trí hiện tại
+        moves_now = sum(
+            1 for dr, dc in DICHUYEN
+            if 0 <= row + dr < self.num_rows
+            and 0 <= col + dc < self.num_cols
+            and self.tt_bandau[row + dr, col + dc] != 1
+        )
+        if moves_now == 0:
+            dead_end_penalty = 10
+        elif moves_now == 1:
+            dead_end_penalty = 5
+        elif moves_now == 2:
+            dead_end_penalty = 3
+        elif moves_now == 3:
+            dead_end_penalty = 1
+        else:
+            dead_end_penalty = 0
+
+        # Lookahead penalty nhiều bước
+        lookahead_pen = self.lookahead_penalty(row, col, lookahead_steps)
+
+        # Heuristic tổng (h càng nhỏ càng tốt)
+        H = manhattan + dead_end_penalty + lookahead_pen
+        return H
+
 
     # 7. Chi phí từ start đến node hiện tại
     def gx(self, parent_g):
@@ -164,6 +227,18 @@ b = [(int(row), int(col)) for row, col in b]
 print("Trạng thái đã duyệt qua:   ", a)
 print("Đường đi:   ", b)
 print("Thông số AStar:", astar.thong_so())
+
+"""Đây là kq với hàm heuristic trên"""
+# Thông số AStar: {
+# 'So tt da duyet': 103,
+# 'So tt da sinh': 125,
+# 'Kich thuoc bo nho (tt)': 30,
+# 'Kich thuoc bo nho (MB)': 0.006264,
+# 'Do dai duong di': 47,
+# 'Execution time (s)': 0.018511
+# }
+
+"""Đây là kq với hàm heuristic = manhattan ==> độ dài đường đi = cách trên nhưng chậm hơn"""
 # Thông số AStar: {
 # 'So tt da duyet': 145,
 # 'So tt da sinh': 159,
@@ -171,3 +246,5 @@ print("Thông số AStar:", astar.thong_so())
 # 'Kich thuoc bo nho (MB)': 0.003792,
 # 'Do dai duong di': 47,
 # 'Execution time (s)': 0.015433}
+
+

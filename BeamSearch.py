@@ -35,17 +35,21 @@ class BeamSearch:
             ma_tran = matrix
         self.tt_bandau = np.array(ma_tran)
         self.num_rows, self.num_cols = self.tt_bandau.shape
-        self.list_tt_duyet = []
-        self.duong_di = []
+
         self.beam = BEAM
 
+        # lưu thứ tự các trạng thái đã duyệt
+        self.list_tt_duyet = []
+        # lưu đường đi
+        self.duong_di = []
+
         # Các thông số để so sánh
-        self.So_tt_daduyet = 0
-        self.So_tt_dasinh = 0
-        self.Kichthuoc_bonho = 0
-        self.Kichthuoc_bonho_MB = 0.0
-        self.Dodai_duongdi = 0
-        self.execution_time = 0
+        self.So_tt_daduyet = 0  # số trạng thái đã duyệt
+        self.So_tt_dasinh = 0  # số trạng thái đã sinh/được xem xét
+        self.Kichthuoc_bonho = 0  # Số tt ở thời điểm stack max
+        self.Kichthuoc_bonho_MB = 0.0  # kích thước bộ nhớ max
+        self.Dodai_duongdi = 0  # chiều dài đường đi
+        self.execution_time = 0  # thời gian thực thi
 
     # 1. Kiểm tra trạng thái có phải goal
     def la_tt_goal(self, row, col):
