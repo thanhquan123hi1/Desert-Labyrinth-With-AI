@@ -3,75 +3,26 @@ import pygame
 class UIManager:
     def __init__(self, font=None):
         if font is None:
-            self.font = pygame.font.Font("Resources/Font/pixel3.ttf", 20)
+            self.font = pygame.font.Font("Resources/Font/pixel3.ttf", 23)
         else:
             self.font = font
         self.panel_img = pygame.image.load("Resources/Menu/panel.png").convert_alpha()
 
-    def fade_transition(self, screen, clock, res, duration=1000):
-        fade_surface = pygame.Surface(res)
-        fade_surface.fill((0, 0, 0))
+    def draw_text(self, surface, text, x, y, color=(0,0,0), pathFont=None, size=16):
+        if pathFont:
+            font = pygame.font.Font(pathFont, size)
+        else:
+            font = self.font
+        txt_surf = font.render(text, False, color)
+        surface.blit(txt_surf, (x, y))
 
-        half = duration // 2
-        start_time = pygame.time.get_ticks()
-
-        # ---- Fade Out (rõ -> đen) ----
-        while True:
-            now = pygame.time.get_ticks()
-            elapsed = now - start_time
-            if elapsed > half:
-                break
-
-            alpha = int(255 * (elapsed / half))   # tăng alpha từ 0 -> 255
-            fade_surface.set_alpha(alpha)
-            screen.blit(fade_surface, (0, 0))
-            pygame.display.flip()
-            clock.tick(60)
-
-        # ---- Fade In (đen -> rõ) ----
-        start_time = pygame.time.get_ticks()
-        while True:
-            now = pygame.time.get_ticks()
-            elapsed = now - start_time
-            if elapsed > half:
-                break
-
-            alpha = int(255 * (1 - elapsed / half) * 255)  # giảm alpha từ 255 -> 0
-            fade_surface.set_alpha(alpha)
-            screen.blit(fade_surface, (0, 0))
-            pygame.display.flip()
-            clock.tick(60)
-
-    
 
     def draw_panel(self, surface, x, y, width, height, title=None):
-        # scale ảnh panel theo kích thước yêu cầu
         panel_scaled = pygame.transform.scale(self.panel_img, (width, height))
-
-        # vẽ ảnh panel lên surface
         surface.blit(panel_scaled, (x, y))
-
-        # vẽ title nếu có
         if title:
-            text = self.font.render(title, False, (0, 0, 0))
-            surface.blit(text, (x + 50, y + 20))
-
-        # trả về rect panel để tiện dùng
+            self.draw_text(surface, title, x + 35, y + 20)
         return pygame.Rect(x, y, width, height)
-
-    def draw_button(self, surface, x, y, width, height, text, mouse_pos, mouse_click):
-        rect = pygame.Rect(x, y, width, height)
-        color = (200, 200, 200)
-        if rect.collidepoint(mouse_pos):
-            color = (180, 180, 180)
-        pygame.draw.rect(surface, color, rect)
-        pygame.draw.rect(surface, (0, 0, 0), rect, 2)
-        text_surf = self.font.render(text, False, (0,0,0))
-        surface.blit(text_surf, (rect.centerx - text_surf.get_width()//2,
-                                 rect.centery - text_surf.get_height()//2))
-        if mouse_click and rect.collidepoint(mouse_pos):
-            return True
-        return False
 
     def draw_dropmenu(self, surface, x, y, width, height, options, state, mouse_pos, mouse_click):
         rect = pygame.Rect(x, y, width, height)

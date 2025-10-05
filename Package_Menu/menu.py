@@ -77,7 +77,7 @@ class Menu:
                                         self.imgNormal, self.imgHover, self.imgPressed,
                                         mouse_pos, mouse_click, 1.5, 1.5,
                                         text="OPTIONS"):
-                pass
+                return Options(self.screen).show()
 
             if self.ui.draw_image_button(self.screen, *self.btn_pos["quit"],
                                         self.imgNormal, self.imgHover, self.imgPressed,

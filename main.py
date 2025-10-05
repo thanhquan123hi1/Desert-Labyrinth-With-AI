@@ -23,7 +23,7 @@ class App:
         self.imgNormal = pygame.image.load("Resources/Menu/buttons/Button_Blue.png").convert_alpha()
         self.imgHover = pygame.image.load("Resources/Menu/buttons/Button_Hover.png").convert_alpha()
         self.imgPressed = pygame.image.load("Resources/Menu/buttons/Button_Blue_Pressed.png").convert_alpha()
-        # nút back
+        # back button
         self.imgNormal_back = pygame.image.load("Resources/Maps/buttons/back_normal.png").convert_alpha()
         self.imgHover_back = pygame.image.load("Resources/Maps/buttons/back_hover.png").convert_alpha()
         self.imgPressed_back = pygame.image.load("Resources/Maps/buttons/back_pressed.png").convert_alpha()
@@ -31,7 +31,7 @@ class App:
     def draw(self):
         self.surface.blit(self.bg, (0, 0))
         self.map_model.draw(self.surface)
-        self.ui.draw_panel(self.surface, 1020,30,420,700, "Information panel")
+        self.ui.draw_panel(self.surface, 1020,30,420,700, title="INFORMATION PANEL")
         self.player_group.draw(self.surface)
 
     def run(self):
@@ -58,8 +58,9 @@ class App:
             self.ui.draw_image_button(self.surface, 1322, 615, 
                                       self.imgNormal, self.imgHover, self.imgPressed ,mouse_pos, mouse_click, 1.2, 1.2)
             
-            self.ui.draw_image_button(self.surface, 0, 0, 
-                                      self.imgNormal_back, self.imgHover_back, self.imgPressed_back ,mouse_pos, mouse_click, 1, 1)
+            if self.ui.draw_image_button(self.surface, 0, 0, 
+                                      self.imgNormal_back, self.imgHover_back, self.imgPressed_back ,mouse_pos, mouse_click, 1, 1):
+                return "BACK"
             
             pygame.display.set_caption("Map: " + str(round(self.clock.get_fps())))
             pygame.display.flip()
@@ -69,14 +70,22 @@ if __name__ == "__main__":
     pygame.init()
     screen = pygame.display.set_mode(RES)
     clock = pygame.time.Clock()
+    ui = UIManager()
 
-    # chạy menu
-    menu = Menu(screen)
-    choice = menu.run()
+    while True:
+        menu = Menu(screen)
+        choice = menu.run()
 
-    if choice == "START GAME":
-        ui = UIManager()
-        ui.fade_transition(screen, clock, RES, 1000)
-        app = App()
-        app.run()
+        if choice == "QUIT":
+            pygame.quit()
+            sys.exit()
+
+        elif choice == "START GAME":
+            app = App()
+            btn_choice = app.run()
+
+            if btn_choice == "BACK":
+                continue 
+        elif choice == "OPTIONS":
+            Options(screen).show()
 
