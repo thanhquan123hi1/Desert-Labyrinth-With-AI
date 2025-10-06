@@ -65,7 +65,6 @@ class Menu:
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     mouse_click = True
 
-            # vẽ nền + animation
             self.screen.blit(self.bg, (0,0))
             if self.ui.draw_image_button(self.screen, *self.btn_pos["start"],
                                         self.imgNormal, self.imgHover, self.imgPressed,
@@ -77,7 +76,7 @@ class Menu:
                                         self.imgNormal, self.imgHover, self.imgPressed,
                                         mouse_pos, mouse_click, 1.5, 1.5,
                                         text="OPTIONS"):
-                return Options(self.screen).show()
+                return "OPTIONS"
 
             if self.ui.draw_image_button(self.screen, *self.btn_pos["quit"],
                                         self.imgNormal, self.imgHover, self.imgPressed,
@@ -86,7 +85,5 @@ class Menu:
                 return "QUIT"
 
             self.draw_desert_animation()
-
-
             pygame.display.flip()
             self.clock.tick(60)

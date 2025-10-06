@@ -17,9 +17,13 @@ class UIManager:
         surface.blit(txt_surf, (x, y))
 
 
-    def draw_panel(self, surface, x, y, width, height, title=None):
-        panel_scaled = pygame.transform.scale(self.panel_img, (width, height))
-        surface.blit(panel_scaled, (x, y))
+    def draw_panel(self, surface, x, y, width, height, title=None, panel_img=None):
+        if panel_img:
+            panel_scaled = pygame.transform.scale(panel_img, (width, height))
+            surface.blit(panel_scaled, (x, y))
+        else:
+            panel_scaled = pygame.transform.scale(self.panel_img, (width, height))
+            surface.blit(panel_scaled, (x, y))
         if title:
             self.draw_text(surface, title, x + 35, y + 20)
         return pygame.Rect(x, y, width, height)

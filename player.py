@@ -7,8 +7,8 @@ class Player(pygame.sprite.Sprite):
         super().__init__(*group)
 
         self.frame_width, self.frame_height = 96, 96
-        self.sprite_idle = pygame.image.load("Resources/Characters/idle_yellow.png").convert_alpha()
-        self.sprite_run = pygame.image.load("Resources/Characters/run_yellow.png").convert_alpha()
+        self.sprite_idle = pygame.image.load("Resources/Characters/idle_blue.png").convert_alpha()
+        self.sprite_run = pygame.image.load("Resources/Characters/run_blue.png").convert_alpha()
 
         self.num_frames_idle = 6
         self.num_frames_run = 6

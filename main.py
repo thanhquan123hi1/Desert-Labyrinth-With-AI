@@ -18,7 +18,6 @@ class App:
         self.ui = UIManager()
         self.player_group = pygame.sprite.Group()
         self.player = Player((96, 96), self.player_group)  
-
         # image buttons
         self.imgNormal = pygame.image.load("Resources/Menu/buttons/Button_Blue.png").convert_alpha()
         self.imgHover = pygame.image.load("Resources/Menu/buttons/Button_Hover.png").convert_alpha()
@@ -87,5 +86,8 @@ if __name__ == "__main__":
             if btn_choice == "BACK":
                 continue 
         elif choice == "OPTIONS":
-            Options(screen).show()
+            options = Options(screen)
+            btn_choice = options.run()
+            if btn_choice == "BACK":
+                continue 
 

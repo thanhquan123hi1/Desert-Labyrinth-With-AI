@@ -1,81 +1,63 @@
-import pygame
+import pygame, sys
+from animation import SpriteSheetAnimation
+from ui import UIManager
 
 class Options:
-    def __init__(self, screen, font, clock):
+    def __init__(self, screen):
         self.screen = screen
-        self.font = font
-        self.clock = clock
+        self.ui = UIManager()
+        self.clock = pygame.time.Clock()
+        self.bg = pygame.image.load("Resources/Maps/desert.png").convert()
+        self.panel_img = pygame.image.load("Resources/Menu/option_panel.png").convert_alpha()
 
-        # popup rect
-        self.popup_rect = pygame.Rect(150, 120, 500, 350)
+        # back button
+        self.imgNormal_back = pygame.image.load("Resources/Maps/buttons/back_normal.png").convert_alpha()
+        self.imgHover_back = pygame.image.load("Resources/Maps/buttons/back_hover.png").convert_alpha()
+        self.imgPressed_back = pygame.image.load("Resources/Maps/buttons/back_pressed.png").convert_alpha()
 
-        # nút bấm
-        self.buttons = [
-            {"text": "CLOSE", "rect": pygame.Rect(320, 400, 160, 50)}
-        ]
+        # Tạo animation mũi tên từ cùng một sheet
+        self.arrow_anim = SpriteSheetAnimation(
+            "Resources/Animation/sheetarrow.png",
+            frame_width=128,
+            frame_height=128,
+            frame_count=7,
+            fps=15,
+            loop=True
+        )
 
-    def draw_inner_shadow(self, surface, rect, thickness=20):
-        """Vẽ viền bóng đổ bên trong"""
-        shadow = pygame.Surface(rect.size, pygame.SRCALPHA)
-        width, height = rect.size
-        for i in range(thickness):
-            alpha = int(180 * (1 - i / thickness))
-            pygame.draw.rect(
-                shadow,
-                (0, 0, 0, alpha),
-                (i, i, width - 2*i, height - 2*i),
-                width=3
-            )
-        surface.blit(shadow, rect.topleft)
+    def draw(self):
+            self.ui.draw_panel(self.screen, 370,30,704,480, panel_img=self.panel_img)
 
-    def draw_popup(self, mouse_pos):
-        # overlay mờ toàn màn hình
-        overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 150))
-        self.screen.blit(overlay, (0, 0))
 
-        # hộp popup
-        pygame.draw.rect(self.screen, (240, 220, 180), self.popup_rect, border_radius=10)
-        pygame.draw.rect(self.screen, (50, 30, 20), self.popup_rect, 4, border_radius=10)
-        self.draw_inner_shadow(self.screen, self.popup_rect)
-
-        # tiêu đề
-        title = self.font.render("OPTIONS", True, (0, 0, 0))
-        self.screen.blit(title, (self.popup_rect.centerx - title.get_width()//2, self.popup_rect.y + 20))
-
-        # vẽ các nút
-        for btn in self.buttons:
-            rect = btn["rect"]
-            color = (200, 170, 120) if rect.collidepoint(mouse_pos) else (180, 140, 100)
-            pygame.draw.rect(self.screen, color, rect, border_radius=5)
-            pygame.draw.rect(self.screen, (0,0,0), rect, 3, border_radius=5)
-
-            text = self.font.render(btn["text"], True, (255,255,255))
-            self.screen.blit(text, (rect.centerx - text.get_width()//2,
-                                    rect.centery - text.get_height()//2))
-
-    def show(self):
-        """Chạy popup cho đến khi bấm CLOSE"""
-        running = True
-        while running:
+    def run(self):
+        while True:
+            dt = self.clock.tick(60) / 1000
             mouse_pos = pygame.mouse.get_pos()
+            mouse_pressed = pygame.mouse.get_pressed()
             mouse_click = False
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
-                    raise SystemExit
+                    sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     mouse_click = True
 
-            # Vẽ popup (đè lên menu đang hiển thị phía dưới)
-            self.draw_popup(mouse_pos)
+            # Cập nhật animation
+            self.arrow_anim.update(dt)
 
-            # xử lý nút
-            for btn in self.buttons:
-                if mouse_click and btn["rect"].collidepoint(mouse_pos):
-                    if btn["text"] == "CLOSE":
-                        running = False
+            # Vẽ nền
+            self.screen.blit(self.bg, (0, 0))
+            if self.ui.draw_image_button(self.screen, 0, 0, 
+                            self.imgNormal_back, self.imgHover_back, self.imgPressed_back ,mouse_pos, mouse_click, 1.2, 1.2):
+                return "BACK"
+            
+            self.draw()
+
+            # Vẽ mũi tên trái (flip=True để lật ngang)
+            self.arrow_anim.draw(self.screen, (50, 400), scale=0.6, flip=True)
+
+            # Vẽ mũi tên phải (flip=False giữ nguyên)
+            self.arrow_anim.draw(self.screen, (1400, 400), scale=0.6, flip=False)
 
             pygame.display.flip()
-            self.clock.tick(60)
