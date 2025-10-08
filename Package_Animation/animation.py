@@ -54,3 +54,20 @@ class SpriteSheetAnimation:
             frame = pygame.transform.flip(frame, True, False)
         rect = frame.get_rect(center=pos)
         surface.blit(frame, rect)
+
+    def buttonSprite(self, surface, pos, mouse_pos, mouse_click, scale=1.0, flip=False):
+        frame = self.frames[self.current_frame]
+        if scale != 1.0:
+            frame = pygame.transform.scale(frame, (int(self.frame_width * scale), int(self.frame_height * scale)))
+        if flip:
+            frame = pygame.transform.flip(frame, True, False)
+
+        rect = frame.get_rect(center=pos)
+        surface.blit(frame, rect)
+
+        if mouse_click and rect.collidepoint(mouse_pos):
+            return True
+        return False
+    
+    
+

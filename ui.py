@@ -17,9 +17,9 @@ class UIManager:
         surface.blit(txt_surf, (x, y))
 
 
-    def draw_panel(self, surface, x, y, width, height, title=None, panel_img=None):
-        if panel_img:
-            panel_scaled = pygame.transform.scale(panel_img, (width, height))
+    def draw_panel(self, surface, x, y, width, height, title=None, img_panel=None):
+        if img_panel:
+            panel_scaled = pygame.transform.scale(img_panel, (width, height))
             surface.blit(panel_scaled, (x, y))
         else:
             panel_scaled = pygame.transform.scale(self.panel_img, (width, height))
@@ -99,43 +99,3 @@ class UIManager:
         return False
 
     
-
-if __name__ == "__main__":
-    pygame.init()
-    screen = pygame.display.set_mode((600, 600))
-    pygame.display.set_caption("Demo UI Manager")
-
-    ui = UIManager(pygame.font.SysFont("Arial", 20))
-    drop_state = {"open": False, "selected": "BFS"}
-    running = True
-
-    while running:
-        mouse_pos = pygame.mouse.get_pos()
-        mouse_click = False
-        mouse_pressed = pygame.mouse.get_pressed()
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                mouse_click = True
-
-        screen.fill((255, 255, 255))
-
-        # Panel
-        ui.draw_panel(screen, 50, 50, 500, 400, "Control Panel")
-
-        # Normal button
-        if ui.draw_button(screen, 70, 100, 120, 40, "Run", mouse_pos, mouse_click):
-            print("Run clicked")
-        # Dropmenu
-        selected = ui.draw_dropmenu(screen, 70, 160, 150, 30,
-                                    ["BFS", "DFS", "A*"], drop_state,
-                                    mouse_pos, mouse_click)
-        if selected:
-            print("Selected:", selected)
-
-
-
-        pygame.display.flip()
-    pygame.quit()
