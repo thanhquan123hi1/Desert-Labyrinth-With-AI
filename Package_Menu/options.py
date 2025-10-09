@@ -39,13 +39,15 @@ class Options:
             "Resources/Maps/Map1.tmx",
             "Resources/Maps/Map2.tmx",
             "Resources/Maps/Map3.tmx",
-            "Resources/Maps/Map4.tmx"
+            "Resources/Maps/Map4.tmx",
+            "Resources/Maps/Map5.tmx",
         ]
         self.map_previews = [
             "Resources/Maps/Maze1.png",
             "Resources/Maps/Maze2.png",
             "Resources/Maps/Maze3.png",
-            "Resources/Maps/Maze4.png"
+            "Resources/Maps/Maze4.png",
+            "Resources/Maps/Maze5.png"
         ]
         self.players = [
             {

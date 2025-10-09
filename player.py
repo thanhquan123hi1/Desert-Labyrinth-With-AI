@@ -4,8 +4,11 @@ from settings import TILE_SIZE
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos, *group, 
                  sprite_idle=("Resources/Characters/idle_torchman.png", 96, 96, 6),
-                 sprite_run=None):
+                 sprite_run=None,
+                 offset=(0, 0)):
         super().__init__(*group)
+
+        self.offset_x, self.offset_y = offset
 
         # --- Idle sheet ---
         idle_path, self.frame_width, self.frame_height, self.num_frames_idle = sprite_idle
@@ -38,7 +41,6 @@ class Player(pygame.sprite.Sprite):
         self.facing_right = True
         self.animation_timer = 0
 
-    # --- Cắt frame từ sprite sheet ---
     def load_frames(self, sprite_sheet, num_frames):
         frames = []
         for i in range(num_frames):
@@ -49,7 +51,6 @@ class Player(pygame.sprite.Sprite):
             frames.append(frame)
         return frames
 
-    # --- Điều khiển ---
     def handle_input(self):
         keys = pygame.key.get_pressed()
         self.direction.update(0, 0)
@@ -64,26 +65,34 @@ class Player(pygame.sprite.Sprite):
             self.direction.x = 1
             self.facing_right = True
 
-    # --- Di chuyển + va chạm ---
     def move_with_collision(self, dt, collision_matrix):
         if self.direction.length_squared() > 0:
             self.direction = self.direction.normalize()
 
+        # --- Tạm thời loại bỏ offset khi kiểm tra va chạm ---
+        rect = self.rect.copy()
+        rect.x -= self.offset_x
+        rect.y -= self.offset_y
+
         # Trục X
-        self.rect.x += self.direction.x * self.speed * dt
-        if self.collides(self.rect, collision_matrix):
+        rect.x += self.direction.x * self.speed * dt
+        if self.collides(rect, collision_matrix):
             if self.direction.x > 0:
-                self.rect.right = (self.rect.right // TILE_SIZE) * TILE_SIZE
+                rect.right = (rect.right // TILE_SIZE) * TILE_SIZE
             elif self.direction.x < 0:
-                self.rect.left = (self.rect.left // TILE_SIZE + 1) * TILE_SIZE
+                rect.left = (rect.left // TILE_SIZE + 1) * TILE_SIZE
 
         # Trục Y
-        self.rect.y += self.direction.y * self.speed * dt
-        if self.collides(self.rect, collision_matrix):
+        rect.y += self.direction.y * self.speed * dt
+        if self.collides(rect, collision_matrix):
             if self.direction.y > 0:
-                self.rect.bottom = (self.rect.bottom // TILE_SIZE) * TILE_SIZE
+                rect.bottom = (rect.bottom // TILE_SIZE) * TILE_SIZE
             elif self.direction.y < 0:
-                self.rect.top = (self.rect.top // TILE_SIZE + 1) * TILE_SIZE
+                rect.top = (rect.top // TILE_SIZE + 1) * TILE_SIZE
+
+        # --- Gán lại vị trí thực tế ---
+        self.rect.x = rect.x + self.offset_x
+        self.rect.y = rect.y + self.offset_y
 
     def collides(self, rect, collision_matrix):
         rows, cols = collision_matrix.shape
@@ -95,11 +104,10 @@ class Player(pygame.sprite.Sprite):
         for y in range(top, bottom + 1):
             for x in range(left, right + 1):
                 if 0 <= x < cols and 0 <= y < rows:
-                    if collision_matrix[y][x] == 1:  # gặp tường
+                    if collision_matrix[y][x] == 1:
                         return True
         return False
 
-    # --- Animation ---
     def animate(self, dt):
         if self.direction.length_squared() > 0:
             self.state = "run"
@@ -117,7 +125,6 @@ class Player(pygame.sprite.Sprite):
             frame = pygame.transform.flip(frame, True, False)
         self.image = frame
 
-    # --- Update ---
     def update(self, dt, collision_matrix):
         self.handle_input()
         self.move_with_collision(dt, collision_matrix)

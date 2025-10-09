@@ -8,11 +8,13 @@ class UIManager:
             self.font = font
         self.panel_img = pygame.image.load("Resources/Menu/panel.png").convert_alpha()
 
-    def draw_text(self, surface, text, x, y, color=(0,0,0), pathFont=None, size=16):
+    def draw_text(self, surface, text, x, y, color=(0,0,0), pathFont=None, size=16, bold=False):
         if pathFont:
             font = pygame.font.Font(pathFont, size)
         else:
             font = self.font
+        if bold:
+            font.set_bold(True)
         txt_surf = font.render(text, False, color)
         surface.blit(txt_surf, (x, y))
 
