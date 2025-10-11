@@ -27,7 +27,7 @@ matrix = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ]
 DICHUYEN = [(0,1),(1,0),(0,-1),(-1,0)]
-class AStar:
+class Greedy:
     def __init__(self, ma_tran=None):
         if ma_tran is None:
             ma_tran = matrix
@@ -78,7 +78,18 @@ class AStar:
     def luu_tt_daduyet(self, row, col):
         self.list_tt_duyet.append((row, col))
 
-    # 6. Heuristic Manhattan
+    # 6. Trả về thông số
+    def thong_so(self):
+        return {
+            "So tt da duyet": self.So_tt_daduyet,
+            "So tt da sinh": self.So_tt_dasinh,
+            "Kich thuoc bo nho (tt)": self.Kichthuoc_bonho,
+            "Kich thuoc bo nho (MB)": round(self.Kichthuoc_bonho_MB, 6),
+            "Do dai duong di": self.Dodai_duongdi,
+            "Execution time (s)": round(self.execution_time, 6)
+        }
+
+    # 7. Heuristic Manhattan
     def lookahead_penalty(self, row, col, depth, visited=None, weight=1.0):
         if visited is None:
             visited = set()
@@ -111,8 +122,9 @@ class AStar:
                 for r1, c1 in moves
             ]
             # chọn nhánh tệ nhất
-            penalty += max(next_penalties)
+            penalty += min(next_penalties)
         return penalty
+
 
     def heuristic(self, vitri, lookahead_steps=3):
         goal = self.tim_vitri(3)[0]
@@ -144,40 +156,21 @@ class AStar:
 
         # Heuristic tổng (h càng nhỏ càng tốt)
         H = manhattan + dead_end_penalty + lookahead_pen
-        return H
+        return
 
 
-    # 7. Chi phí từ start đến node hiện tại
-    def gx(self, parent_g):
-        return parent_g + 1
-
-    # 8. Tổng f(x) = g(x) + h(x)
-    def fx(self, g, h):
-        return g + h
-
-    # 9. Trả về thông số
-    def thong_so(self):
-        return {
-            "So tt da duyet": self.So_tt_daduyet,
-            "So tt da sinh": self.So_tt_dasinh,
-            "Kich thuoc bo nho (tt)": self.Kichthuoc_bonho,
-            "Kich thuoc bo nho (MB)": round(self.Kichthuoc_bonho_MB, 6),
-            "Do dai duong di": self.Dodai_duongdi,
-            "Execution time (s)": round(self.execution_time, 6)
-        }
-
-    # -------- Chạy A* ----------
+    # -------- Chạy Greedy ----------
     def chay_thuattoan(self):
         start_time = time.time()
+
         start = self.tim_vitri(2)[0]
         goal = self.tim_vitri(3)[0]
         visited = {start}
-        g_cost = {start: 0}
         cha = {}
+        tt_hientai = self.tt_bandau.copy()
 
-        # priority queue: (f(x), (row, col))
         heap = []
-        heapq.heappush(heap, (self.fx(g_cost[start], self.heuristic(start)), start))
+        heapq.heappush(heap, (self.heuristic(start), start))
         self.So_tt_dasinh += 1
         self.Kichthuoc_bonho = max(self.Kichthuoc_bonho, len(heap))
         self.Kichthuoc_bonho_MB = max(self.Kichthuoc_bonho_MB, asizeof.asizeof(heap) / (1024*1024))
@@ -193,58 +186,55 @@ class AStar:
             if self.la_tt_goal(row, col):
                 self.duong_di = self.tim_duongdi(start, goal, cha)
                 self.Dodai_duongdi = len(self.duong_di)
+                # Cập nhật max queue
                 self.Kichthuoc_bonho = max(self.Kichthuoc_bonho, len(heap))
                 self.Kichthuoc_bonho_MB = max(self.Kichthuoc_bonho_MB, asizeof.asizeof(heap) / (1024 * 1024))
                 self.execution_time = time.time() - start_time
 
-                # Loại bỏ start khỏi danh sách nếu muốn giống Greedy
                 self.list_tt_duyet.pop(0)
                 self.duong_di.pop(0)
                 return self.list_tt_duyet, self.duong_di
 
             # Sinh trạng thái con
             for con in self.sinh_tt_con(row, col, visited):
-                if con in visited:
-                    continue
                 visited.add(con)
                 cha[con] = (row, col)
-                g_cost[con] = self.gx(g_cost[(row, col)])
-                heapq.heappush(heap, (self.fx(g_cost[con], self.heuristic(con)), con))
+                heapq.heappush(heap, (self.heuristic(con), con))
                 self.So_tt_dasinh += 1
 
             self.Kichthuoc_bonho = max(self.Kichthuoc_bonho, len(heap))
-            self.Kichthuoc_bonho_MB = max(self.Kichthuoc_bonho_MB, asizeof.asizeof(heap) / (1024*1024))
+            self.Kichthuoc_bonho_MB = max(self.Kichthuoc_bonho_MB, asizeof.asizeof(heap) / (1024 * 1024))
 
         return None
 
-print("\n","AStar".center(60, "-"))
-astar = AStar()
-a, b = astar.chay_thuattoan()
+
+print("\n","Greedy".center(60, "-"))
+greedy = Greedy()
+a, b = greedy.chay_thuattoan()
 # ép kiểu tất cả tuple (row, col) trong a và b thành int
 a = [(int(row), int(col)) for row, col in a]
 b = [(int(row), int(col)) for row, col in b]
 
 print("Trạng thái đã duyệt qua:   ", a)
 print("Đường đi:   ", b)
-print("Thông số AStar:", astar.thong_so())
+print("Thông số Greedy:", greedy.thong_so())
 
 """Đây là kq với hàm heuristic trên"""
-# Thông số AStar: {
-# 'So tt da duyet': 103,
-# 'So tt da sinh': 125,
-# 'Kich thuoc bo nho (tt)': 30,
-# 'Kich thuoc bo nho (MB)': 0.006264,
+# Thông số Greedy: {
+# 'So tt da duyet': 73,
+# 'So tt da sinh': 107,
+# 'Kich thuoc bo nho (tt)': 36,
+# 'Kich thuoc bo nho (MB)': 0.007515,
 # 'Do dai duong di': 47,
-# 'Execution time (s)': 0.018511
+# 'Execution time (s)': 0.01514
 # }
 
-"""Đây là kq với hàm heuristic = manhattan ==> độ dài đường đi = cách trên nhưng chậm hơn"""
-# Thông số AStar: {
-# 'So tt da duyet': 145,
-# 'So tt da sinh': 159,
-# 'Kich thuoc bo nho (tt)': 18,
-# 'Kich thuoc bo nho (MB)': 0.003792,
-# 'Do dai duong di': 47,
-# 'Execution time (s)': 0.015433}
-
-
+"""Đây là kq với hàm heuristic = manhattan ==> độ dài đường đi dài hơn cách trên nhưng nhanh honw"""
+#Thông số Greedy: {
+# 'So tt da duyet': 58,
+# 'So tt da sinh': 76,
+# 'Kich thuoc bo nho (tt)': 19,
+# 'Kich thuoc bo nho (MB)': 0.004021,
+# 'Do dai duong di': 51,
+# 'Execution time (s)': 0.005129
+# }

@@ -148,8 +148,6 @@ class SimulatedAnnealing:
 
         self.list_tt_duyet.append(start)
         dosau = 0
-        accept = True
-        queue = []
         while True:
             row, col = H
             # Nếu tới goal thì lưu đường đi và kết thúc

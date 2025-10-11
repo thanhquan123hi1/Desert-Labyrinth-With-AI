@@ -1,17 +1,17 @@
 import pygame, sys
 
-from AndOrSearch import AndOrSearch
-from Astar import AStar
-from BFS import BFS
-from BacktrackingAC3 import BacktrackingAC3
-from BacktrackingForwardchecking import BacktrackingForwardChecking
-from BeamSearch import BeamSearch
-from Belief import Belief
+from Algorthms_Search.AndOrSearch import AndOrSearch
+from Algorthms_Search.Astar import AStar
+from Algorthms_Search.BFS import BFS
+from Algorthms_Search.BacktrackingAC3 import BacktrackingAC3
+from Algorthms_Search.BacktrackingForwardchecking import BacktrackingForwardChecking
+from Algorthms_Search.BeamSearch import BeamSearch
+from Algorthms_Search.Belief import Belief
 from Button import Button
-from DFS import DFS
+from Algorthms_Search.DFS import DFS
 from Dropdown import Dropdown
-from Greedy import Greedy
-from SimulatedAnnealing import SimulatedAnnealing
+from Algorthms_Search.Greedy import Greedy
+from Algorthms_Search.SimulatedAnnealing import SimulatedAnnealing
 from settings import RES, X_START, Y_START, X_GOAL, Y_GOAL #import kích thước của màn hình  ******************
 from map_model import MapModel #import các class MapModel và Player
 from player import Player
@@ -28,7 +28,7 @@ class App:   #Để chạy chương trình chính(xử lý sự kiện)
         self.clock = pygame.time.Clock()
 
         #Tạo đối tượng MapModel và Player
-        self.map_model = MapModel("Resources/Maps/Map1.tmx")
+        self.map_model = MapModel("../Resources/Maps/Map1.tmx")
         self.player_group = pygame.sprite.Group()  #Tạo ra một đối tượng nhóm để quản lí tất cả các sprite(tile)
 
         self.player = Player((X_START*32, Y_START*32) , self.player_group) #đưa vào nhóm ******************

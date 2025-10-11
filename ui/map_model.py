@@ -2,7 +2,6 @@ import pygame
 import numpy as np
 from tile import Tile, AnimatedTile
 from pytmx.util_pygame import load_pygame #đối tượng để load file tmx
-from BFS import BFS
 
 
 class MapModel:
