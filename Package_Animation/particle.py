@@ -9,11 +9,11 @@ class Particles:
         self.lightning_timer = 0
         self.lightning_alpha = 0  
 
-        # ❄️ Lớp tuyết tích tụ
+        # Lớp tuyết tích tụ
         self.snow_ground = pygame.Surface(RES, pygame.SRCALPHA)
         self.ground_level = RES[1] - 50  
 
-        # 💦 splash (cho mưa)
+        # splash (cho mưa)
         self.splashes = []
 
     def reset_particles(self):
@@ -29,7 +29,7 @@ class Particles:
         ticks = pygame.time.get_ticks() * 0.001
         self.wind = math.sin(ticks * 0.5) * 1.2
 
-    # 🌵 Sa mạc: mặt trời + hạt cát + sóng cát
+    # Sa mạc: mặt trời + hạt cát + sóng cát
     def desertEffect(self, screen):
         sun_center = (RES[0] - 120, 100)
         for r, alpha in [(80, 30), (60, 60), (40, 120)]:
@@ -56,7 +56,7 @@ class Particles:
                       for x in range(0, RES[0] + 20, 20)]
             pygame.draw.lines(screen, (220, 180, 120), False, points, 2)
 
-    # ❄️ Tuyết rơi + tích tụ
+    # Tuyết rơi + tích tụ
     def snowEffect(self, screen):
         self.update_wind()
 
@@ -81,7 +81,7 @@ class Particles:
         # vẽ lớp tuyết đã tích tụ
         screen.blit(self.snow_ground, (0, 0))
 
-    # 🌧️ Mưa + splash + phản chiếu + sấm sét
+    # Mưa + splash + phản chiếu + sấm sét
     def rainEffect(self, screen):
         self.update_wind()
 
@@ -122,7 +122,7 @@ class Particles:
         # --- sấm sét ---
         self.handle_lightning(screen)
 
-    # ⚡ Sấm sét lóe sáng + tia sét ngoằn ngoèo
+    # Sấm sét lóe sáng + tia sét ngoằn ngoèo
     def handle_lightning(self, screen):
         if self.lightning_timer <= 0 and random.random() < 0.005:
             self.lightning_timer = random.randint(2, 6)
@@ -143,7 +143,7 @@ class Particles:
                 end_y = y + random.randint(40, 80)
                 pygame.draw.line(screen, (255, 255, 255), (start_x, y), (end_x, end_y), 2)
                 start_x, y = end_x, end_y
-    # 🌪️ Bão cát
+    # Bão cát
     def sandstormEffect(self, screen):
         self.update_wind()
         overlay = pygame.Surface(RES, pygame.SRCALPHA)
@@ -161,7 +161,7 @@ class Particles:
 
         screen.blit(overlay, (0,0), special_flags=pygame.BLEND_RGBA_ADD)
 
-    # ✨ Đom đóm
+    # Đom đóm
     def firefliesEffect(self, screen):
         if not hasattr(self, "fireflies"):
             self.fireflies = [
@@ -190,7 +190,7 @@ class Particles:
             if f[1] < 0: f[1] = RES[1]
             if f[1] > RES[1]: f[1] = 0
 
-    # 🍃 Lá rơi
+    # Lá rơi
     def leavesEffect(self, screen):
         if not hasattr(self, "leaves"):
             self.leaves = [
