@@ -15,7 +15,8 @@ class AlgorithmPanel:
         self.groups = [
             {"name": "Uninformed Search", "algs": ["BFS", "DFS"]},
             {"name": "Informed Search", "algs": ["Greedy", "A*"]},
-            {"name": "Local Search", "algs": ["Beam", "SA"]}
+            {"name": "Local Search", "algs": ["Beam", "SA"]},
+            {"name": "Belief Search", "algs": ["NoOBS"]},  # 🟢 thêm nhóm này
         ]
         self.index = 0
         self.selected = None  # thuật toán hiện chọn
