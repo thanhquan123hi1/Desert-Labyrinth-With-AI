@@ -8,7 +8,7 @@ class PathViewPanel:
     def __init__(self):
         # --- Font & UI ---
         self.font_title = pygame.font.Font("Resources/Font/pixel3.ttf", 34)
-        self.font_text = pygame.font.Font("Resources/Font/viethoa2.otf", 20)
+        self.font_text = pygame.font.Font("Resources/Font/viethoa2.otf", 18)
         self.ui = UIManager()
 
         # --- Trạng thái hiển thị ---
@@ -43,14 +43,17 @@ class PathViewPanel:
         self.scroll_speed = 20
 
     # ------------------------------------------------------------
-    def toggle(self, map_model=None, path=None, info=None, algorithm_name="Unknown"):
+    def toggle(self, map_model=None, path=None, info=None, algorithm_name="Unknown", start=None, goal=None):
         """Bật/tắt hiển thị và cập nhật dữ liệu"""
         if map_model and path is not None:
             self.map_model = map_model
             self.path = path
             self.info = info if info else {}
             self.algorithm_name = algorithm_name
+            self.start = start
+            self.goal = goal
         self.visible = not self.visible
+
 
     def handle_event(self, event):
         """Nhận sự kiện cuộn chuột"""
@@ -60,6 +63,7 @@ class PathViewPanel:
             self.scroll_offset -= event.y * self.scroll_speed
             self.scroll_offset = max(0, min(self.scroll_offset, self.max_scroll))
 
+    # ------------------------------------------------------------
     # ------------------------------------------------------------
     def draw(self, surface, mouse_pos, mouse_click):
         """Vẽ overlay show path"""
@@ -78,7 +82,7 @@ class PathViewPanel:
 
         # --- Tiêu đề + tên thuật toán ---
         title = self.font_title.render("Detail", False, (255, 255, 255))
-        alg_name = self.font_text.render(f"Thuật toán: {self.algorithm_name}", False, (255, 230, 180))
+        alg_name = self.font_text.render(f"Thuật toán: {self.algorithm_name}", True, (255, 230, 180))
         surface.blit(title, (x + width // 2 - title.get_width() // 2, y + 15))
         surface.blit(alg_name, (x + 40, y + 60))
 
@@ -102,24 +106,45 @@ class PathViewPanel:
         if self.map_model:
             map_w = self.map_model.map_data.width * TILE_SIZE
             map_h = self.map_model.map_data.height * TILE_SIZE
-
             temp = pygame.Surface((map_w, map_h), pygame.SRCALPHA)
+
+            # --- Vẽ bản đồ nền ---
             old_offx, old_offy = self.map_model.offset_x, self.map_model.offset_y
             self.map_model.offset_x = 0
             self.map_model.offset_y = 0
             self.map_model.draw(temp)
             self.map_model.offset_x, self.map_model.offset_y = old_offx, old_offy
 
-            for (r, c) in self.path:
-                rect = pygame.Rect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE)
-                s = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
-                s.fill((0, 200, 255, 100))
-                temp.blit(s, rect.topleft)
+            # --- Hiển thị đường đi ---
+            if self.algorithm_name == "NoOBS":
+                # Mỗi belief là một tập toạ độ => vẽ nhạt dần
+                n = len(self.path)
+                for i, belief in enumerate(self.path):
+                    alpha = int(80 + (i / max(1, n - 1)) * 150)
+                    color = (0, 255, 150, alpha)
+                    for (r, c) in belief:
+                        rect = pygame.Rect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+                        s = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
+                        s.fill(color)
+                        temp.blit(s, rect.topleft)
 
-            pts = [(c * TILE_SIZE + TILE_SIZE // 2, r * TILE_SIZE + TILE_SIZE // 2) for r, c in self.path]
-            if len(pts) > 1:
-                pygame.draw.lines(temp, (0, 255, 255), False, pts, 3)
+                # Vẽ viền mục tiêu
+                goals = getattr(self, "goal", [])
+                for (r, c) in goals:
+                    pygame.draw.rect(temp, (255, 255, 0), (c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE), 2)
+            else:
+                # Các thuật toán thông thường
+                for (r, c) in self.path:
+                    rect = pygame.Rect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+                    s = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
+                    s.fill((0, 200, 255, 100))
+                    temp.blit(s, rect.topleft)
 
+                pts = [(c * TILE_SIZE + TILE_SIZE // 2, r * TILE_SIZE + TILE_SIZE // 2) for r, c in self.path]
+                if len(pts) > 1:
+                    pygame.draw.lines(temp, (0, 255, 255), False, pts, 3)
+
+            # --- Thu nhỏ ---
             scale_x = preview_rect.width / map_w
             scale_y = preview_rect.height / map_h
             scale_factor = min(scale_x, scale_y)
@@ -131,37 +156,61 @@ class PathViewPanel:
             surface.blit(mini, (offset_x, offset_y))
 
         # --- Thông tin tổng quát ---
-        info_texts = [
-            f"Độ dài đường đi: {self.info.get('Độ dài đường đi: ', len(self.path))}",
-            f"Số trạng thái đã duyệt: {self.info.get('Số trạng thái đã duyệt: ', '-')}",
-            f"Số trạng thái đã sinh: {self.info.get('Số trạng thái đã sinh: ', '-')}",
-            f"Thời gian chạy: {round(self.info.get('Thời gian chạy (s): ', 0) * 1000, 1)} ms",
-            f"Kết quả: {self.info.get('Kết quả', '—')}",  
-        ]
+        info_texts = []
 
-        for i, text in enumerate(info_texts):
-            color = (0, 255, 0) if "Thành công" in text else (255, 80, 80) if "Thất bại" in text else (255, 255, 255)
+        # 1️⃣ Hiển thị start / goal
+        if self.algorithm_name == "NoOBS":
+            starts = getattr(self, "start", [])
+            goals = getattr(self, "goal", [])
+            info_texts.append(("Tập trạng thái ban đầu", f"{list(starts)[:3]}{'...' if len(starts) > 3 else ''}", (120, 200, 255)))
+            info_texts.append(("Tập trạng thái đích", f"{list(goals)[:3]}{'...' if len(goals) > 3 else ''}", (255, 230, 100)))
+        else:
+            info_texts.append(("Trạng thái bắt đầu", str(getattr(self, "start", "-")), (120, 200, 255)))
+            info_texts.append(("Trạng thái đích", str(getattr(self, "goal", "-")), (255, 230, 100)))
+
+        # 2️⃣ Các chỉ số thống kê
+        info_texts.extend([
+            ("Độ dài đường đi", str(self.info.get('Độ dài đường đi: ', len(self.path))), (255, 255, 255)),
+            ("Số TT đã duyệt", str(self.info.get('Số trạng thái đã duyệt: ', '-')), (255, 255, 255)),
+            ("Số TT đã sinh", str(self.info.get('Số trạng thái đã sinh: ', '-')), (255, 255, 255)),
+            ("Thời gian chạy", f"{round(self.info.get('Thời gian chạy (s): ', 0) * 1000, 2)} ms", (255, 255, 255)),
+            ("Kết quả", self.info.get('Kết quả', '—'), (0, 255, 0) if "Thành công" in self.info.get('Kết quả', '') else (255, 80, 80)),
+        ])
+
+        # 3️⃣ Vẽ text
+        for i, (label, value, color) in enumerate(info_texts):
+            text = f"{label}: {value}"
             txt = self.font_text.render(text, True, color)
-            surface.blit(txt, (x + 600, y + 100 + i * 28))
-
+            surface.blit(txt, (x + 550, y + 70 + i * 25))
 
         # --- Danh sách tọa độ ---
         if not self.path:
-            msg = self.font_text.render("Không có dữ liệu đường đi.", False, (160, 195, 217))
+            msg = self.font_text.render("Không có dữ liệu đường đi.", True, (160, 195, 217))
             surface.blit(msg, (x + 600, y + 280))
             return
 
+        # --- Hiển thị khác nhau cho NoOBS ---
         start_y = y + 270 - self.scroll_offset
         row_h = 26
         self.max_scroll = max(0, len(self.path) * row_h - 240)
 
-        for i, (r, c) in enumerate(self.path):
-            row_y = start_y + i * row_h
-            if row_y < y + 270 or row_y > y + height - 70:
-                continue
-            text = f"{i + 1:>3}. ({r}, {c})"
-            txt = self.font_text.render(text, True, (255, 255, 255))
-            surface.blit(txt, (x + 650, row_y))
+        if self.algorithm_name == "NoOBS":
+            for i, belief in enumerate(self.path):
+                row_y = start_y + i * row_h
+                if row_y < y + 270 or row_y > y + height - 70:
+                    continue
+                belief_preview = list(belief)[:4]
+                text = f"Bước {i+1:>2}: {belief_preview}{'...' if len(belief)>4 else ''}"
+                txt = self.font_text.render(text, True, (200, 255, 220))
+                surface.blit(txt, (x + 550, row_y))
+        else:
+            for i, (r, c) in enumerate(self.path):
+                row_y = start_y + i * row_h
+                if row_y < y + 270 or row_y > y + height - 70:
+                    continue
+                text = f"{i + 1:>3}. ({r}, {c})"
+                txt = self.font_text.render(text, True, (255, 255, 255))
+                surface.blit(txt, (x + 550, row_y))
 
         # --- Thanh cuộn ---
         if self.max_scroll > 0:
@@ -173,3 +222,4 @@ class PathViewPanel:
 
         # --- Viền ngoài ---
         pygame.draw.rect(surface, (100, 150, 220), (x, y, width, height), 3, border_radius=18)
+

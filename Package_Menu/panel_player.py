@@ -44,7 +44,7 @@ class PlayerPanel:
 
         # --- Tiêu đề ---
         name = os.path.basename(self.players[self.index]["idle"][0]).split("_")[1].split(".")[0]
-        title = self.font.render(f"Player: {name}", False, (255, 255, 255))
+        title = self.font.render(f"Player: {name}", True, (255, 255, 255))
         title_rect = title.get_rect(center=(x + width // 2, y + 47))
         surface.blit(title, title_rect)
 

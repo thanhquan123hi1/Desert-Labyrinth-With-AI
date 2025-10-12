@@ -31,7 +31,7 @@ class MapPanel:
         for path in self.map_previews:
             if os.path.exists(path):
                 img = pygame.image.load(path).convert()
-                # 🟢 Scale ảnh để vừa với panel (giữ tỉ lệ 220x140)
+                # Scale ảnh để vừa với panel (giữ tỉ lệ 220x140)
                 thumb = pygame.transform.smoothscale(img, (220, 140))  
                 self.previews.append(thumb)
             else:
@@ -49,7 +49,7 @@ class MapPanel:
 
         # --- Ảnh preview (scale cho phù hợp khung) ---
         preview = self.previews[self.index]
-        # 🟢 Scale lại ảnh cho cân đối trong khung panel
+        # Scale lại ảnh cho cân đối trong khung panel
         preview_scaled = pygame.transform.scale(preview, (440, 290))  
         preview_rect = preview_scaled.get_rect(center=(x + width // 2 + 5, y + height // 2 + 5))
         surface.blit(preview_scaled, preview_rect)

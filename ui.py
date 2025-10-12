@@ -15,7 +15,7 @@ class UIManager:
             font = self.font
         if bold:
             font.set_bold(True)
-        txt_surf = font.render(text, False, color)
+        txt_surf = font.render(text, True, color)
         surface.blit(txt_surf, (x, y))
 
 

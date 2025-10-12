@@ -195,9 +195,14 @@ class App:
                                         mouse_pos, mouse_click, 0.5, 0.7, text="Detail"):
                 search = self.alg_manager.search
                 if search:
-                    self.path_panel.toggle(self.map_model, path, search.thong_so(),
-                                           self.alg_manager.selected_alg)
-
+                    self.path_panel.toggle(
+                        self.map_model,
+                        path,
+                        search.thong_so(),
+                        self.alg_manager.selected_alg,
+                        getattr(search, "starts", getattr(search, "start", None)),
+                        getattr(search, "goals", getattr(search, "goal", None))
+                    )
             # Button: HISTORY
             if uitext.draw_image_button(self.surface, 1050, 630,
                                         self.imgNormal, self.imgHover, self.imgPressed,

@@ -57,7 +57,7 @@ class BGPanel:
 
         # --- Tiêu đề ---
         bg_name = os.path.basename(self.backgrounds[self.index]).split(".")[0]
-        title = self.font.render(f"Background: {bg_name}", False, (255, 255, 255))
+        title = self.font.render(f"Background: {bg_name}", True, (255, 255, 255))
         title_rect = title.get_rect(center=(x + width // 2, y + 47))
         surface.blit(title, title_rect)
 

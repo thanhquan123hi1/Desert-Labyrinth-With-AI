@@ -38,7 +38,7 @@ class AlgorithmPanel:
 
         # --- Tiêu đề nhóm ---
         group = self.groups[self.index]
-        title = self.font.render(group["name"], False, (60, 40, 10))  # nâu đậm, dễ đọc
+        title = self.font.render(group["name"], True, (60, 40, 10))  # nâu đậm, dễ đọc
         title_rect = title.get_rect(center=(x + width // 2, y + 25))
         surface.blit(title, title_rect)
 
@@ -90,7 +90,7 @@ class AlgorithmPanel:
             surface.blit(btn_surface, (start_x, rect_y))
 
             # Vẽ chữ
-            txt = self.font.render(alg, False, text_color)
+            txt = self.font.render(alg, True, text_color)
             txt_rect = txt.get_rect(center=btn_rect.center)
             surface.blit(txt, txt_rect)
 
