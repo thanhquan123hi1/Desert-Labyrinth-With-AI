@@ -41,12 +41,15 @@ class InformedSearch:
         return path
 
     def thong_so(self):
+        success = len(self.duong_di) > 0
         return {
+            "Kết quả": "Thành công" if success else "Thất bại",
             "Số trạng thái đã duyệt: ": self.So_tt_daduyet,
             "Số trạng thái đã sinh: ": self.So_tt_dasinh,
             "Độ dài đường đi: ": self.Dodai_duongdi,
             "Thời gian chạy (s): ": round(self.execution_time, 6)
         }
+
 
     #Hàm Heuristic theo Manhattan + lookedhead_penalty + Dead-end_penalty
     def lookahead_penalty(self, row, col, depth, visited=None, weight=1.0):

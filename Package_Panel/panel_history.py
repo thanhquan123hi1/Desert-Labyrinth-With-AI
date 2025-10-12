@@ -14,7 +14,7 @@ class SolveHistoryPanel:
         # --- Trạng thái hiển thị ---
         self.visible = False
 
-        # --- Ảnh nút đóng (3 trạng thái) ---
+        # --- Ảnh nút đóng ---
         self.close_nor = pygame.image.load("Resources/Menu/buttons/close_nor.png").convert_alpha()
         self.close_hover = pygame.image.load("Resources/Menu/buttons/close_hover.png").convert_alpha()
         self.close_pressed = pygame.image.load("Resources/Menu/buttons/close_pressed.png").convert_alpha()
@@ -35,13 +35,6 @@ class SolveHistoryPanel:
         self.panel_color = (10, 25, 60, 235)
         self.border_color = (80, 100, 160)
 
-        # --- Preview mini mê cung ---
-        try:
-            self.preview_img = pygame.image.load("Resources/Menu/maze_preview.png").convert_alpha()
-            self.preview_img = pygame.transform.smoothscale(self.preview_img, (130, 130))
-        except:
-            self.preview_img = None
-
         # --- Scroll ---
         self.scroll_offset = 0
         self.max_scroll = 0
@@ -53,7 +46,6 @@ class SolveHistoryPanel:
 
     # ------------------------------------------------------------
     def handle_event(self, event):
-        """Nhận sự kiện chuột cuộn"""
         if not self.visible:
             return
         if event.type == pygame.MOUSEWHEEL:
@@ -62,7 +54,6 @@ class SolveHistoryPanel:
 
     # ------------------------------------------------------------
     def draw(self, surface, history, mouse_pos, mouse_click):
-        """Vẽ Solve History overlay"""
         if not self.visible:
             return
 
@@ -80,79 +71,70 @@ class SolveHistoryPanel:
         title = self.font_title.render("Solve History", False, (255, 255, 255))
         surface.blit(title, (x + width // 2 - title.get_width() // 2, y + 20))
 
-        # --- Nút close (hình tròn) ---
+        # --- Nút close ---
         close_img = self.close_nor
         close_rect = close_img.get_rect(center=(x + width - 45, y + 50))
-        mouse_dx = mouse_pos[0] - close_rect.centerx
-        mouse_dy = mouse_pos[1] - close_rect.centery
-        dist = math.sqrt(mouse_dx**2 + mouse_dy**2)
-        radius = close_rect.width // 2
-
-        hovered = dist <= radius
+        hovered = math.hypot(mouse_pos[0] - close_rect.centerx, mouse_pos[1] - close_rect.centery) <= close_rect.width // 2
         if hovered and mouse_click:
             close_img = self.close_pressed
             self.visible = False
             return
         elif hovered:
             close_img = self.close_hover
-        else:
-            close_img = self.close_nor
         surface.blit(close_img, close_rect)
 
         # --- Header các cột ---
-        headers = ["Algorithm", "Steps", "Visited", "Generated", "Time (ms)"]
-        col_x = [x + 170, x + 290, x + 400, x + 520, x + 680]
+        headers = ["Algorithm", "Steps", "Visited", "Generated", "Time (ms)", "Result"]
+        col_x = [x + 100, x + 220, x + 330, x + 460, x + 590, x + 720]
         for i, h in enumerate(headers):
-            txt = self.font_text.render(h, True, (255, 220, 160))
+            txt = self.font_text.render(h, False, (255, 220, 160))
             surface.blit(txt, (col_x[i], y + 90))
-        pygame.draw.line(surface, (180, 180, 220),
-                         (x + 20, y + 115), (x + width - 20, y + 115), 2)
+        pygame.draw.line(surface, (180, 180, 220), (x + 20, y + 115), (x + width - 20, y + 115), 2)
 
-        # --- Preview mini bản đồ ---
-        if self.preview_img:
-            preview_rect = self.preview_img.get_rect(topleft=(x + 25, y + 140))
-            surface.blit(self.preview_img, preview_rect)
-
-        # --- Dữ liệu lịch sử ---
+        # --- Không có dữ liệu ---
         if not history:
-            msg = self.font_text.render("No data yet.", True, (255, 255, 255))
+            msg = self.font_text.render("No data yet.", False, (255, 255, 255))
             surface.blit(msg, (x + width // 2 - msg.get_width() // 2, y + height // 2))
             return
 
-        # Dữ liệu cần vẽ
+        # --- Dữ liệu lịch sử ---
         recent = history[-30:]  # tối đa 30 dòng
         start_y = y + 130 - self.scroll_offset
         row_height = 36
-
-        # Tính max_scroll
         total_h = len(recent) * row_height
         self.max_scroll = max(0, total_h - (height - 170))
 
         for i, h in enumerate(reversed(recent)):
             row_y = start_y + i * row_height
             if row_y < y + 120 or row_y > y + height - 50:
-                continue  # bỏ qua dòng ngoài vùng nhìn thấy
+                continue
 
             alg = h["algorithm"]
             steps = h.get("Độ dài đường đi: ", "-")
             visited = h.get("Số trạng thái đã duyệt: ", "-")
             gen = h.get("Số trạng thái đã sinh: ", "-")
             time_ms = round(h.get("Thời gian chạy (s): ", 0) * 1000, 1)
+            result = h.get("Kết quả", "—")
 
             vals = [alg, steps, visited, gen, time_ms]
             for j, val in enumerate(vals):
                 txt = self.font_text.render(str(val), True, (255, 255, 255))
                 surface.blit(txt, (col_x[j], row_y))
 
+            # 🔹 Cột “Kết quả” màu sắc
+            if result == "Thành công": result = "success" 
+            else: result = "fail"
+            color = (0, 255, 0) if result == "success" else (255, 80, 80)
+            res_txt = self.font_text.render(result, False, color)
+            surface.blit(res_txt, (col_x[-1], row_y))
+
         # --- Thanh cuộn ---
         if self.max_scroll > 0:
             scroll_area_h = height - 180
             bar_h = max(40, int(scroll_area_h * (scroll_area_h / (total_h + 1))))
             bar_y = y + 130 + int((self.scroll_offset / self.max_scroll) * (scroll_area_h - bar_h))
-            bar_rect = pygame.Rect(x + width - 18, bar_y, 8, bar_h)
-            pygame.draw.rect(surface, (150, 200, 250), bar_rect, border_radius=4)
+            pygame.draw.rect(surface, (150, 200, 250), (x + width - 18, bar_y, 8, bar_h), border_radius=4)
             pygame.draw.rect(surface, (60, 90, 150), (x + width - 18, y + 130, 8, scroll_area_h), 2, border_radius=4)
 
         # --- Viền ngoài ---
-        pygame.draw.rect(surface, (100, 150, 220),
-                         (x, y, width, height), 3, border_radius=18)
+        pygame.draw.rect(surface, (100, 150, 220), (x, y, width, height), 3, border_radius=18)

@@ -1,6 +1,8 @@
 import random
 import numpy as np
 import time
+import sys
+sys.setrecursionlimit(5000)
 
 MOVES = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
@@ -14,6 +16,7 @@ class NOOBS:
         self.visited = set()
         self.path = []             # lưu chuỗi belief
         self.execution_time = 0.0  # thời gian chạy
+        self.generated_count = 0   
 
     # ------------------------------------------------------------
     def is_valid(self, x, y):
@@ -45,6 +48,10 @@ class NOOBS:
 
         for move in MOVES:
             new_belief = self.action(belief, move)
+
+            # 🔹 tăng số belief sinh ra (kể cả trùng)
+            self.generated_count += 1
+
             result = self.dfs_belief(new_belief, path + [belief])
             if result:
                 return result
@@ -60,32 +67,33 @@ class NOOBS:
 
     # ------------------------------------------------------------
     def thong_so(self):
-        """Trả về thống kê để hiển thị lên giao diện"""
+        success = len(self.path) > 0
         return {
-            "Số belief duyệt: ": len(self.visited),
-            "Độ dài đường đi (belief): ": len(self.path),
+            "Kết quả": "Thành công" if success else "Thất bại",
+            "Số trạng thái đã duyệt: ": len(self.visited),
+            "Số trạng thái đã sinh: ": self.generated_count,
+            "Độ dài đường đi: ": len(self.path),
             "Thời gian chạy (s): ": round(self.execution_time, 6)
         }
 
 
+
 # ======================================================
 def find_start_beliefs(matrix, n=3):
-    """
-    Chọn ngẫu nhiên n ô hợp lệ (giá trị = 0) trong toàn mê cung làm tập belief ban đầu.
-    """
+    """Chọn ngẫu nhiên n ô hợp lệ (giá trị = 0) trong toàn mê cung làm tập belief ban đầu."""
     valid_positions = [
         (i, j)
         for i in range(len(matrix))
         for j in range(len(matrix[0]))
         if matrix[i][j] == 0
     ]
-
     if len(valid_positions) <= n:
         return valid_positions
     return random.sample(valid_positions, n)
 
 
 def find_goal_beliefs(matrix, n=3):
+    """Chọn n ô hợp lệ cuối mê cung làm tập belief đích."""
     goals = []
     for i in range(len(matrix) - 1, -1, -1):
         for j in range(len(matrix[0]) - 1, -1, -1):

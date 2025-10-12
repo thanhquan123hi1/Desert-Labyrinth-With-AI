@@ -78,7 +78,7 @@ class PathViewPanel:
 
         # --- Tiêu đề + tên thuật toán ---
         title = self.font_title.render("Detail", False, (255, 255, 255))
-        alg_name = self.font_text.render(f"Algorithm: {self.algorithm_name}", False, (255, 230, 180))
+        alg_name = self.font_text.render(f"Thuật toán: {self.algorithm_name}", False, (255, 230, 180))
         surface.blit(title, (x + width // 2 - title.get_width() // 2, y + 15))
         surface.blit(alg_name, (x + 40, y + 60))
 
@@ -136,15 +136,19 @@ class PathViewPanel:
             f"Số trạng thái đã duyệt: {self.info.get('Số trạng thái đã duyệt: ', '-')}",
             f"Số trạng thái đã sinh: {self.info.get('Số trạng thái đã sinh: ', '-')}",
             f"Thời gian chạy: {round(self.info.get('Thời gian chạy (s): ', 0) * 1000, 1)} ms",
+            f"Kết quả: {self.info.get('Kết quả', '—')}",  
         ]
+
         for i, text in enumerate(info_texts):
-            txt = self.font_text.render(text, True, (255, 255, 255))
+            color = (0, 255, 0) if "Thành công" in text else (255, 80, 80) if "Thất bại" in text else (255, 255, 255)
+            txt = self.font_text.render(text, True, color)
             surface.blit(txt, (x + 600, y + 100 + i * 28))
+
 
         # --- Danh sách tọa độ ---
         if not self.path:
-            msg = self.font_text.render("No path available.", True, (255, 255, 255))
-            surface.blit(msg, (x + 500, y + 280))
+            msg = self.font_text.render("Không có dữ liệu đường đi.", False, (160, 195, 217))
+            surface.blit(msg, (x + 600, y + 280))
             return
 
         start_y = y + 270 - self.scroll_offset

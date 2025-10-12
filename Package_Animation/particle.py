@@ -220,3 +220,36 @@ class Particles:
                 leaf[2] = random.uniform(1,2)
                 leaf[3] = random.randint(20,40)
                 leaf[4] = 0
+    # ================================================
+    # Hiệu ứng bụi khi player bước đi
+    def playerStepEffect(self, pos):
+        """Tạo bụi nhỏ tại vị trí bước chân player"""
+        if not hasattr(self, "player_dust"):
+            self.player_dust = []
+        for _ in range(random.randint(3, 6)):
+            x, y = pos
+            vx = random.uniform(-1.0, 1.0)
+            vy = random.uniform(-2.0, -0.5)
+            size = random.randint(2, 4)
+            life = 1.0
+            self.player_dust.append([x, y, vx, vy, size, life])
+
+    def update_player_dust(self, screen, dt):
+        """Cập nhật và vẽ bụi chân player"""
+        if not hasattr(self, "player_dust"):
+            return
+        alive = []
+        for d in self.player_dust:
+            x, y, vx, vy, size, life = d
+            x += vx
+            y += vy
+            vy += 0.1
+            life -= dt * 1.5
+            if life > 0:
+                alpha = int(255 * life)
+                color = (230, 200, 120, alpha)
+                s = pygame.Surface((size, size), pygame.SRCALPHA)
+                s.fill(color)
+                screen.blit(s, (x, y))
+                alive.append([x, y, vx, vy, size, life])
+        self.player_dust = alive

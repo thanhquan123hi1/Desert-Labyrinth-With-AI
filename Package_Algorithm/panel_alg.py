@@ -16,7 +16,7 @@ class AlgorithmPanel:
             {"name": "Uninformed Search", "algs": ["BFS", "DFS"]},
             {"name": "Informed Search", "algs": ["Greedy", "A*"]},
             {"name": "Local Search", "algs": ["Beam", "SA"]},
-            {"name": "Belief Search", "algs": ["NoOBS"]},  # 🟢 thêm nhóm này
+            {"name": "Belief Search", "algs": ["NoOBS"]},  
         ]
         self.index = 0
         self.selected = None  # thuật toán hiện chọn
