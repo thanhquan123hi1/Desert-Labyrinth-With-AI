@@ -6,14 +6,14 @@ class EffectPanel:
 
         self.original_effects = [
             pygame.image.load("Resources/Menu/envir/baocat.png").convert_alpha(),
-            pygame.image.load("Resources/Menu/envir/domdom.png").convert_alpha(),
+            pygame.image.load("Resources/Menu/envir/fireflies.png").convert_alpha(),
             pygame.image.load("Resources/Menu/envir/leaves.png").convert_alpha(),
             pygame.image.load("Resources/Menu/envir/rain.png").convert_alpha(),
             pygame.image.load("Resources/Menu/envir/snow.png").convert_alpha(),
         ]
 
         # Tên hiệu ứng tương ứng
-        self.effect_names = ["baocat", "domdom", "leaves", "rain", "snow"]
+        self.effect_names = ["baocat", "fireflies", "leaves", "rain", "snow"]
 
         # Kích thước icon mặc định
         self.icon_size = (90, 90)

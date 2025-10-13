@@ -1,5 +1,6 @@
-from Package_Algorithm import UninformedSearch, InformedSearch, LocalSearch, NOOBS
+from Package_Algorithm import UninformedSearch, InformedSearch, LocalSearch, NOOBS, AndOrSearch, Backtracking, ForwardChecking
 from Package_Algorithm.NoOBS import find_start_beliefs, find_goal_beliefs
+
 
 
 class AlgorithmManager:
@@ -17,26 +18,26 @@ class AlgorithmManager:
         self.visited_states, self.path = [], []
         self.search = None
 
-        # ==================== Uninformed Search ====================
+        # Uninformed Search 
         if name in ["BFS", "DFS"]:
             self.search = UninformedSearch(self.map_model, start, goal)
             self.visited_states, self.path = getattr(self.search, name)()
 
-        # ==================== Informed Search ====================
+        # Informed Search
         elif name in ["Greedy", "A*"]:
             self.search = InformedSearch(self.map_model, start, goal)
             self.visited_states, self.path = (
                 self.search.Greedy() if name == "Greedy" else self.search.Astar()
             )
 
-        # ==================== Local Search ====================
+        # Local Search 
         elif name in ["Beam", "SA"]:
             self.search = LocalSearch(self.map_model, start, goal)
             self.visited_states, self.path = (
                 self.search.BeamSearch() if name == "Beam" else self.search.SimulatedAnnealingSearch()
             )
 
-        # ==================== NoOBS (Partial Observation Search) ====================
+        #  NoOBS 
         elif name == "NoOBS":
             matrix = self.map_model.collision_matrix
             starts = find_start_beliefs(matrix, 3)
@@ -57,8 +58,23 @@ class AlgorithmManager:
             self.search.goals = goals
 
             print(f"[NoOBS] Độ dài đường đi belief: {len(self.path)}")
+            
+        #  And-Or Search 
+        elif name == "AndOrS":
+            self.search = AndOrSearch(self.map_model, start, goal)
+            self.visited_states, self.path = self.search.AndOrSearch()
+        
+        #  Backtracking (CSP) 
+        elif name == "Backtrack":
+            self.search = Backtracking(self.map_model, start, goal)
+            self.visited_states, self.path = self.search.run()
 
-        # ==================== Trả kết quả thống kê ====================
+        #  Forward Checking (CSP)
+        elif name == "Forward":
+            self.search = ForwardChecking(self.map_model, start, goal)
+            self.visited_states, self.path = self.search.run()
+
+        # Trả kết quả thống kê
         info = self.search.thong_so() if self.search else {}
         return self.search, self.visited_states, self.path, info
 

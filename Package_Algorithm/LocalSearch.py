@@ -157,33 +157,6 @@ class LocalSearch:
     def Xacsuat_chapnhan(self, delta_h, T):
         return math.exp(-abs(delta_h) / T) if T > 0 else 0
 
-    def heuristic_SA(self, pos):
-        goal = self.goal
-        start = pos
-
-        heap = [(0, start)]
-        g_cost = {start: 0}
-        visited = set().union(self.visited)
-
-        while heap:
-            _, node = heapq.heappop(heap)
-            if node == goal:
-                return g_cost[node] + abs(pos[0] - goal[0]) + abs(pos[1] - goal[1])
-            if node in visited:
-                continue
-            visited.add(node)
-            row, col = node
-            for dr, dc in DICHUYEN:
-                r, c = row + dr, col + dc
-                if 0 <= r < self.num_rows and 0 <= c < self.num_cols:
-                    if self.tt_bandau[r, c] != 1:
-                        cost = g_cost[node] + 1
-                        if (r, c) not in g_cost or cost < g_cost[(r, c)]:
-                            g_cost[(r, c)] = cost
-                            h = abs(r - goal[0]) + abs(c - goal[1])  # Manhattan cho sắp xếp heap
-                            heapq.heappush(heap, (cost + h, (r, c)))
-        return float('inf')
-
     def SimulatedAnnealingSearch(self):
         self.reset_stats()
         start_time = time.time()
@@ -194,7 +167,6 @@ class LocalSearch:
 
         self.list_tt_duyet.append(start)
         dosau = 0
-
         while True:
             row, col = H
             if (row, col) == goal:
@@ -213,12 +185,11 @@ class LocalSearch:
             if not queue:  # nếu không còn trạng thái con thì dừng
                 break
 
-            # Tìm trạng thái tốt nhất M
-            heuristics = [self.heuristic(pos) for pos in queue]
-            i_mincost = np.argmin(heuristics)
-            M = queue[i_mincost]
+
+            M = random.choice(queue)
 
             delta_h = self.heuristic(M) - self.heuristic(H)
+
             # Chấp nhận trạng thái con
             accept = False
             if delta_h < 0:
@@ -226,8 +197,9 @@ class LocalSearch:
             else:
                 P = self.Xacsuat_chapnhan(delta_h, T)
                 rp = random.uniform(0, 1)
-                if rp > P:
+                if rp < P:
                     accept = True
+
             if accept:
                 cha[M] = H
                 H = M
@@ -238,5 +210,3 @@ class LocalSearch:
 
         self.execution_time = time.time() - start_time
         return self.list_tt_duyet, []
-
-

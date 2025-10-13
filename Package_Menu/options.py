@@ -136,7 +136,7 @@ class Options:
 
             if self.current_effect == "baocat":
                 self.particles.sandstormEffect(self.screen)
-            elif self.current_effect == "domdom":
+            elif self.current_effect == "fireflies":
                 self.particles.firefliesEffect(self.screen)
             elif self.current_effect == "leaves":
                 self.particles.leavesEffect(self.screen)

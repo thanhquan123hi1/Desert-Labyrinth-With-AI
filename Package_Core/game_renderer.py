@@ -126,7 +126,7 @@ class GameRenderer:
             "snow":    {"visited": (130, 190, 255), "path": (150, 220, 255), "goal": (255, 255, 255)},
             "leaves":  {"visited": (60, 170, 60),   "path": (80, 200, 80),  "goal": (180, 255, 180)},
             "rain":    {"visited": (40, 110, 220),  "path": (60, 140, 255), "goal": (200, 220, 255)},
-            "domdom":  {"visited": (255, 200, 70),  "path": (220, 200, 80), "goal": (255, 255, 180)},
+            "fireflies":  {"visited": (255, 200, 70),  "path": (220, 200, 80), "goal": (255, 255, 180)},
         }
         return themes.get(effect_name, themes["baocat"])
 

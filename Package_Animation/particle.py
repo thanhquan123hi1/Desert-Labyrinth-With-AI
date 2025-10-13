@@ -162,33 +162,69 @@ class Particles:
         screen.blit(overlay, (0,0), special_flags=pygame.BLEND_RGBA_ADD)
 
     # Đom đóm
+    # Đom đóm lung linh trong đêm
     def firefliesEffect(self, screen):
         if not hasattr(self, "fireflies"):
             self.fireflies = [
-                [random.randint(0, RES[0]), random.randint(0, RES[1]),
-                 random.uniform(0.5, 1.5), random.random()*math.pi*2]  # x,y,speed,phase
-                for _ in range(20)
+                {
+                    "x": random.randint(0, RES[0]),
+                    "y": random.randint(0, RES[1]),
+                    "speed": random.uniform(0.3, 1.0),
+                    "phase": random.random() * math.pi * 2,
+                    "glow_radius": random.randint(40, 80),
+                    "glow_color": (
+                        random.randint(180, 255),
+                        random.randint(230, 255),
+                        random.randint(120, 200)
+                    ),
+                    "blink_speed": random.uniform(0.8, 1.6),
+                }
+                for _ in range(25)
             ]
+
+        # Tạo lớp nền hơi tối để dễ thấy ánh sáng
+        overlay = pygame.Surface(RES, pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 80))
+        screen.blit(overlay, (0, 0))
 
         ticks = pygame.time.get_ticks() * 0.005
         for f in self.fireflies:
-            x, y, speed, phase = f
-            glow = int(150 + 105*math.sin(ticks + phase))  # nhấp nháy
-            color = (200, 255, 150, glow)
+            x, y = f["x"], f["y"]
+            phase = f["phase"]
+            glow_color = f["glow_color"]
+            blink = (math.sin(ticks * f["blink_speed"] + phase) + 1) / 2  # nhấp nháy 0–1
 
-            surf = pygame.Surface((8,8), pygame.SRCALPHA)
-            pygame.draw.circle(surf, color, (4,4), 3)
-            screen.blit(surf, (x, y))
+            # Màu và độ sáng biến thiên
+            r, g, b = glow_color
+            alpha = int(80 + 175 * blink)
 
-            # di chuyển lượn sóng
-            f[0] += math.sin(ticks + phase) * 0.5
-            f[1] += math.cos(ticks*0.3 + phase) * 0.2
+            # Vẽ quầng sáng lan mờ
+            for radius, fade in [(f["glow_radius"], 15), (f["glow_radius"] // 2, 40), (6, alpha)]:
+                s = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
+                pygame.draw.circle(s, (r, g, b, fade), (radius, radius), radius)
+                rect = s.get_rect(center=(int(x), int(y)))
+                screen.blit(s, rect)
 
-            # giữ trong màn hình
-            if f[0] < 0: f[0] = RES[0]
-            if f[0] > RES[0]: f[0] = 0
-            if f[1] < 0: f[1] = RES[1]
-            if f[1] > RES[1]: f[1] = 0
+            # Vẽ đom đóm chính giữa (hạt sáng nhỏ)
+            dot = pygame.Surface((8, 8), pygame.SRCALPHA)
+            pygame.draw.circle(dot, (255, 255, 180, 255), (4, 4), 3)
+            screen.blit(dot, (int(x) - 4, int(y) - 4))
+
+            # Di chuyển lượn sóng + random nhẹ
+            f["x"] += math.sin(ticks + phase) * f["speed"]
+            f["y"] += math.cos(ticks * 0.7 + phase) * f["speed"] * 0.6
+            f["x"] += random.uniform(-0.3, 0.3)
+            f["y"] += random.uniform(-0.2, 0.2)
+
+            # Giữ trong màn hình
+            if f["x"] < 0:
+                f["x"] = RES[0]
+            if f["x"] > RES[0]:
+                f["x"] = 0
+            if f["y"] < 0:
+                f["y"] = RES[1]
+            if f["y"] > RES[1]:
+                f["y"] = 0
 
     # Lá rơi
     def leavesEffect(self, screen):
@@ -253,3 +289,5 @@ class Particles:
                 screen.blit(s, (x, y))
                 alive.append([x, y, vx, vy, size, life])
         self.player_dust = alive
+        
+
