@@ -11,7 +11,6 @@ class AlgorithmManager:
         self.path = []
         self.selected_alg = None
 
-    # -------------------------------------------------------------
     def run_algorithm(self, name, start, goal):
         """Chạy thuật toán tương ứng và trả về (search, visited_states, path, info)."""
         self.selected_alg = name
@@ -46,10 +45,8 @@ class AlgorithmManager:
             # Khởi tạo thuật toán NoOBS
             self.search = NOOBS(matrix, starts, goals)
 
-            # Chạy và nhận kết quả: chuỗi belief (mỗi belief = tập toạ độ)
             belief_path = self.search.search()
 
-            # 🔹 visited_states & path = cùng là chuỗi belief
             self.visited_states = belief_path if belief_path else []
             self.path = belief_path if belief_path else []
 

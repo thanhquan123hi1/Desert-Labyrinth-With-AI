@@ -25,7 +25,6 @@ class CPS:
         self.Dodai_duongdi = 0
         self.execution_time = 0
 
-    # Tạo tập giá trị khả dĩ cho một biến
     def sinh_mien(self, var):
         (r, c) = var
         domain = []
@@ -41,14 +40,10 @@ class CPS:
             return False
         if self.maze[r2, c2] == 1:
             return False
-        (r1, c1) = var
-        if abs(r1 - r2) + abs(c1 - c2) != 1:
-            return False
         if value in visited:
             return False
         return True
 
-    # Chạy thuật toán (chung)
     def run(self):
         self.reset_stats()
         start_time = time.time()
@@ -76,12 +71,17 @@ class CPS:
         }
 
 
-# ======================================================================
-#                           BACKTRACKING
-# ======================================================================
 class Backtracking(CPS):
+    def __init__(self, map_model, start=(1, 1), goal=(19, 28)):
+        super().__init__(map_model, start, goal)
+        self.dead_ends = set()  # bộ nhớ ngõ cụt
+
     def backtrack(self, cur, goal, visited):
-        self.So_tt_daduyet += 1                     # 🔹 mỗi khi mở rộng 1 node
+        # Nếu là ngõ cụt đã biết nên bỏ qua
+        if cur in self.dead_ends:
+            return None
+
+        self.So_tt_daduyet += 1
         self.list_tt_duyet.append(cur)
 
         if cur == goal:
@@ -90,9 +90,8 @@ class Backtracking(CPS):
         if cur not in self.domains:
             self.domains[cur] = self.sinh_mien(cur)
 
-        # Sinh ra các giá trị hợp lệ
         valid_values = [v for v in self.domains[cur] if self.is_consistent(cur, v, visited)]
-        self.So_tt_dasinh += len(valid_values)      # ✅ tổng số con hợp lệ được sinh ra
+        self.So_tt_dasinh += len(valid_values)
 
         for value in valid_values:
             visited.add(cur)
@@ -105,15 +104,17 @@ class Backtracking(CPS):
             visited.remove(cur)
             self.variables.pop()
 
+        # Nếu không tìm thấy đường đánh dấu là ngõ cụt
+        self.dead_ends.add(cur)
         return None
 
 
-# ======================================================================
-#                           FORWARD CHECKING
-# ======================================================================
 class ForwardChecking(CPS):
+    def __init__(self, map_model, start=(1, 1), goal=(19, 28)):
+        super().__init__(map_model, start, goal)
+        self.dead_ends = set()
+
     def forward_check(self, value, visited):
-        """Kiểm tra ràng buộc cho bước kế tiếp"""
         for dx, dy in DICHUYEN:
             new_x, new_y = value[0] + dx, value[1] + dy
             ketiep = (new_x, new_y)
@@ -127,6 +128,9 @@ class ForwardChecking(CPS):
         return True
 
     def backtrack(self, cur, goal, visited):
+        if cur in self.dead_ends:
+            return None
+
         self.So_tt_daduyet += 1
         self.list_tt_duyet.append(cur)
 
@@ -136,9 +140,8 @@ class ForwardChecking(CPS):
         if cur not in self.domains:
             self.domains[cur] = self.sinh_mien(cur)
 
-        # Sinh trước tất cả giá trị hợp lệ
         valid_values = [v for v in self.domains[cur] if self.is_consistent(cur, v, visited)]
-        self.So_tt_dasinh += len(valid_values)      # ✅ tổng số con hợp lệ được sinh ra
+        self.So_tt_dasinh += len(valid_values)
 
         for value in valid_values:
             visited.add(cur)
@@ -152,4 +155,6 @@ class ForwardChecking(CPS):
 
             visited.remove(cur)
             self.variables.pop()
+
+        self.dead_ends.add(cur)
         return None
