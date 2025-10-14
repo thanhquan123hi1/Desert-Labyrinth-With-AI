@@ -1,6 +1,6 @@
 # Desert Labyrinth With AI (MazeGame)
 
-Trò chơi mô phỏng **AI Search Algorithms** trong mê cung bằng **Pygame**, giúp trực quan hóa quá trình tìm đường của các thuật toán AI
+Trò chơi mô phỏng *AI Search Algorithms* trong mê cung bằng Pygame, giúp trực quan hóa quá trình tìm đường của các thuật toán AI
 
 ## Mục lục
 - [Giới thiệu](#giới-thiệu)
