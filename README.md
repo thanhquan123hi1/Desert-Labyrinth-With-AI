@@ -2,6 +2,16 @@
 
 Trò chơi mô phỏng **AI Search Algorithms** trong mê cung bằng **Pygame**, giúp trực quan hóa quá trình tìm đường của các thuật toán AI
 
+## Mục lục
+- [Giới thiệu](#giới-thiệu)
+- [Cấu trúc thư mục](#cấu-trúc-thư-mục)
+- [Cài đặt môi trường](#cài-đặt-môi-trường)
+- [Hướng dẫn chơi](#hướng-dẫn-chơi)
+  - [Màn hình Menu](#màn-hình-menu)
+  - [Màn hình Options](#màn-hình-options)
+  - [Màn hình Game](#màn-hình-game)
+- [Các thuật toán hỗ trợ](#các-thuật-toán-hỗ-trợ)
+
 ## Giới thiệu
 
 **Desert Labyrinth With AI** cho phép quan sát từng bước hoạt động của các thuật toán tìm đường trong mê cung (maze):
@@ -56,28 +66,24 @@ Desert-Labyrinth-With-AI/
 │ ├── particle.py
 │ ├── transition.py
 │ └── ...
-│
 ├── Resources/ 
-  ├── Characters/ 
-  ├── Maps/ 
-  ├── Menu/ 
-  ├── Font/ 
-  └── Animation/ 
 ```
-##  Cài đặt môi trường
+
+## Cài đặt môi trường
 Yêu cầu Python ≥ **3.9** và thư viện sau:
 ```bash
 pip install pygame numpy pytmx matplotlib
 ```
-##  HƯỚNG DẪN CHƠI
 
-### Màn hình **Menu**
+## Hướng dẫn chơi
+
+### Màn hình Menu
 
 - **START GAME** → bắt đầu trò chơi.  
 - **OPTIONS** → chọn nhân vật, bản đồ, hiệu ứng, nền.  
 - **QUIT** → thoát chương trình.  
 
-### Màn hình **Options**
+### Màn hình Options
 
 Tại đây bạn có thể tùy chỉnh:
 
@@ -88,9 +94,9 @@ Tại đây bạn có thể tùy chỉnh:
 | **Player** | Nhân vật hoạt hình: Torchman, Blue, Yellow, Red |
 | **Effect** | Hiệu ứng môi trường: Sandstorm, Snow, Rain, Leaves, Fireflies |
 
->  Nhấn **Back** để lưu cấu hình và quay lại Menu chính.
+> Nhấn **Back** để lưu cấu hình và quay lại Menu chính.
 
-###  Màn hình **Game**
+### Màn hình Game
 
 - Bên phải là **Information Panel** hiển thị thông tin thuật toán.  
 - Chọn thuật toán trong khung **Algorithm Panel**.  
@@ -98,7 +104,7 @@ Tại đây bạn có thể tùy chỉnh:
 - Nhấn **History** để xem lịch sử các lần chạy.  
 - Nhấn **Chart** để xem biểu đồ so sánh hiệu năng.  
 
-##  CÁC THUẬT TOÁN HỖ TRỢ
+## Các thuật toán hỗ trợ
 | Nhóm | Thuật toán | Ghi chú |
 |------|-------------|---------|
 | **Uninformed Search** | BFS, DFS | Không dùng heuristic |
@@ -108,11 +114,3 @@ Tại đây bạn có thể tùy chỉnh:
 | **CSP** | Backtracking, Forward Checking | Giải ràng buộc trên mê cung |
 | **And-Or Search** |  | Áp dụng cho không gian AND/OR |
 | **Adversarial Search** | *(đang phát triển)* | Người chơi vs kẻ địch |
-
-
-
-
-
-
-
-
