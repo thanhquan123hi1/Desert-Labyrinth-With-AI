@@ -105,12 +105,13 @@ Tại đây bạn có thể tùy chỉnh:
 - Nhấn **Chart** để xem biểu đồ so sánh hiệu năng.  
 
 ## Các thuật toán hỗ trợ
-| Nhóm | Thuật toán | Ghi chú |
-|------|-------------|---------|
-| **Uninformed Search** | BFS, DFS | Không dùng heuristic |
-| **Informed Search** | Greedy, A* | Dựa vào heuristic Manhattan |
-| **Local Search** | Beam Search, Simulated Annealing | Không duyệt toàn bộ cây |
-| **NoOBS** | Nondeterministic Search with Belief States | Tìm đường với quan sát không đầy đủ |
-| **CSP** | Backtracking, Forward Checking | Giải ràng buộc trên mê cung |
-| **And-Or Search** |  | Áp dụng cho không gian AND/OR |
-| **Adversarial Search** | *(đang phát triển)* | Người chơi vs kẻ địch |
+| Nhóm | Thuật toán | 
+|------|-------------|
+| **Uninformed Search** | BFS, DFS |
+| **Informed Search** | Greedy, A* | 
+| **Local Search** | Beam Search, Simulated Annealing |
+| **Complex Environment** | Nondeterministic Search with Belief States, And-Or Search |
+| **CSP** | Backtracking, Forward Checking |
+| **Adversarial Search** | *(đang phát triển)* | 
+
+## Tác giả 
