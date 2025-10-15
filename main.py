@@ -172,6 +172,61 @@ class App:
                 else:
                     phase = "idle"
                     self.player.state = "idle"
+                    
+            elif phase == "adversarial_move":
+                if move_idx < len(path) - 1 and self.enemy_move_idx < len(self.enemy_path) - 1:
+                    # --- Player ---
+                    sr, sc = path[move_idx]
+                    er, ec = path[move_idx + 1]
+                    s_pos = (
+                        sc * TILE_SIZE + self.map_offset[0] + TILE_SIZE // 2,
+                        sr * TILE_SIZE + self.map_offset[1] + TILE_SIZE // 2
+                    )
+                    e_pos = (
+                        ec * TILE_SIZE + self.map_offset[0] + TILE_SIZE // 2,
+                        er * TILE_SIZE + self.map_offset[1] + TILE_SIZE // 2
+                    )
+
+                    # --- Enemy ---
+                    sr2, sc2 = self.enemy_path[self.enemy_move_idx]
+                    er2, ec2 = self.enemy_path[self.enemy_move_idx + 1]
+                    s_pos2 = (
+                        sc2 * TILE_SIZE + self.map_offset[0] + TILE_SIZE // 2,
+                        sr2 * TILE_SIZE + self.map_offset[1] + TILE_SIZE // 2
+                    )
+                    e_pos2 = (
+                        ec2 * TILE_SIZE + self.map_offset[0] + TILE_SIZE // 2,
+                        er2 * TILE_SIZE + self.map_offset[1] + TILE_SIZE // 2
+                    )
+
+                    # --- Cập nhật nội suy ---
+                    move_timer += dt
+                    t = min(move_timer / MOVE_INTERVAL, 1.0)
+                    lerp = lambda a, b, t: a + (b - a) * t
+
+                    # Player sprite
+                    px = lerp(s_pos[0], e_pos[0], t)
+                    py = lerp(s_pos[1], e_pos[1], t)
+                    self.player.rect.center = (px, py)
+
+                    # Enemy marker
+                    ex = lerp(s_pos2[0], e_pos2[0], t)
+                    ey = lerp(s_pos2[1], e_pos2[1], t)
+                    self.renderer.enemy_pos = (
+                        int((ey - self.map_offset[1]) // TILE_SIZE),
+                        int((ex - self.map_offset[0]) // TILE_SIZE)
+                    )
+
+                    # Hoàn tất bước
+                    if t >= 1.0:
+                        move_idx += 1
+                        self.enemy_move_idx += 1
+                        move_timer = 0.0
+                        self.particles.playerStepEffect((ex, ey))
+                else:
+                    phase = "idle"
+                    self.player.state = "idle"
+                    self.renderer.enemy_pos = None
 
 
             # =====================================================
@@ -225,15 +280,57 @@ class App:
             # --- Khi chọn thuật toán ---
             if selected_alg:
                 search, visited_states, path, info = self.alg_manager.run_algorithm(selected_alg, start, self.goal)
+                self.renderer.reset_effects()
+
+                if selected_alg in ["Minimax", "AlphaBeta"] and search:
+                    player_path = getattr(search, "duong_di_player", path)
+                    enemy_path = getattr(search, "duong_di_enemy", [])
+                    self.renderer.reset_effects()   
+                    self.renderer.set_adversarial(player_path, enemy_path)
+
+                    self.enemy_path = enemy_path
+                    self.enemy_move_idx = 0
+                    move_idx = 0
+                    snap_to_start()
+                    self.player.state = "run"
+                    self.renderer.enemy_pos = enemy_path[0] if enemy_path else None
+                    phase = "adversarial_move"
+
+                    visible_visited.clear()
+                    visible_path.clear()
+                    v_ptr = p_ptr = 0
+
+                    self.alg_panel.selected = None
+                    continue  
+
+
+                else:
+                    # Các thuật toán bình thường
+                    visible_visited.clear()
+                    visible_path.clear()
+                    v_ptr = p_ptr = 0
+                    phase = "show_visited"
+                    snap_to_start()
+
+                # Lưu kết quả
+                self.alg_panel.selected = None
+                if search:
+                    self.solve_history.append({"algorithm": selected_alg, **info})
+
+
+
                 # Reset hiệu ứng trước khi hiển thị kết quả mới
                 self.renderer.reset_effects()
+
+                # Cập nhật goal
                 if selected_alg == "NoOBS" and hasattr(search, "goals"):
                     self.renderer.goals = list(search.goals)
                 else:
                     self.renderer.goals = [self.goal]
 
+                # Lưu thông tin vào lịch sử
                 if search:
-                    self.solve_history.append({   # <<< đổi từ self.history → self.solve_history
+                    self.solve_history.append({
                         "algorithm": selected_alg,
                         **info
                     })
@@ -244,6 +341,8 @@ class App:
                 phase = "show_visited"
                 snap_to_start()
                 self.alg_panel.selected = None
+
+
 
             # --- Hiển thị thông tin thuật toán ---
             search_info = self.alg_manager.get_info()

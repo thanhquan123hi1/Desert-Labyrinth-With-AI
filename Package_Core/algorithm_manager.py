@@ -1,4 +1,4 @@
-from Package_Algorithm import UninformedSearch, InformedSearch, LocalSearch, NOOBS, AndOrSearch, Backtracking, ForwardChecking
+from Package_Algorithm import UninformedSearch, InformedSearch, LocalSearch, NOOBS, AndOrSearch, Backtracking, ForwardChecking, AdversarialSearch
 from Package_Algorithm.NoOBS import find_start_beliefs, find_goal_beliefs
 
 
@@ -70,14 +70,70 @@ class AlgorithmManager:
         elif name == "Forward":
             self.search = ForwardChecking(self.map_model, start, goal)
             self.visited_states, self.path = self.search.run()
+            
+        #  Adversarial 
+        elif name in ["Minimax", "AlphaBeta"]:
+            mat = self.map_model.collision_matrix
+            enemy_pos = None
+            for r in range(mat.shape[0]):
+                for c in range(mat.shape[1]):
+                    if mat[r, c] == 3:
+                        enemy_pos = (r, c)
+                        break
+                if enemy_pos:
+                    break
+            if not enemy_pos:
+                enemy_pos = (18, 28)
+
+            # Khởi tạo thuật toán rượt đuổi cơ bản
+            self.search = AdversarialSearch(
+                map_model=self.map_model,
+                start=start,
+                enemy_start=enemy_pos,
+                goals=[goal],
+                max_depth=4,
+                step_limit=200
+            )
+
+
+            if name == "Minimax":
+                player_path, enemy_path = self.search.run_minimax()
+            else:
+                player_path, enemy_path = self.search.run_alphabeta()
+
+            self.visited_states = []
+            self.path = player_path
+            self.search.duong_di_player = player_path
+            self.search.duong_di_enemy = enemy_path
+
+            info = self.search.thong_so()
+            return self.search, self.visited_states, self.path, info
+
+
+
 
         # Trả kết quả thống kê
-        info = self.search.thong_so() if self.search else {}
+        if self.search:
+            info = self.search.thong_so()
+        else:
+            info = {}
+
+
         return self.search, self.visited_states, self.path, info
+
+
 
     # -------------------------------------------------------------
     def get_info(self):
         """Lấy thông tin hiện tại của thuật toán để hiển thị trên Information Panel."""
-        if self.search:
+        if not self.search:
+            return {}
+
+        # Nếu là AdversarialSearch -> cần truyền player_path và enemy_path
+        if hasattr(self.search, "duong_di_player") and hasattr(self.search, "duong_di_enemy"):
             return self.search.thong_so()
-        return {}
+
+
+        # Các thuật toán khác (BFS, A*, NoOBS, v.v.)
+        return self.search.thong_so()
+

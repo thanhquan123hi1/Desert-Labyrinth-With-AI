@@ -18,6 +18,7 @@ class AlgorithmPanel:
             {"name": "Local Search", "algs": ["Beam", "SA"]},
             {"name": "Belief Search", "algs": ["NoOBS", "AndOrS"]},
             {"name": "CSP", "algs": ["Backtrack", "Forward"]},
+            {"name": "Adversarial", "algs": ["Minimax", "AlphaBeta"]},
         ]
         self.index = 0
         self.selected = None  # thuật toán hiện chọn

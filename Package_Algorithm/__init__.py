@@ -5,3 +5,4 @@ from .panel_alg import AlgorithmPanel
 from .NoOBS import NOOBS, find_start_beliefs, find_goal_beliefs
 from .AndOrSearch import AndOrSearch
 from .CPS import Backtracking, ForwardChecking
+from .AdversarialSearch import AdversarialSearch
