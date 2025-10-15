@@ -49,7 +49,7 @@ class NOOBS:
         for move in MOVES:
             new_belief = self.action(belief, move)
 
-            # 🔹 tăng số belief sinh ra (kể cả trùng)
+            # tăng số belief sinh ra (kể cả trùng)
             self.generated_count += 1
 
             result = self.dfs_belief(new_belief, path + [belief])

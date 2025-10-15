@@ -1,11 +1,10 @@
 import pygame, sys
-from Package_Animation import SpriteSheetAnimation
+from Package_Animation import SpriteSheetAnimation, Particles
 from ui import UIManager
 from .panel_effects import EffectPanel
 from .panel_bg import BGPanel
 from .panel_player import PlayerPanel
 from .panel_map import MapPanel    
-from Package_Animation import Particles
 
 
 class Options:
@@ -13,7 +12,7 @@ class Options:
         self.screen = screen
         self.ui = UIManager()
         self.clock = pygame.time.Clock()
-
+        self.hide = SpriteSheetAnimation("Resources/Animation/Foam.png", 192, 192, 8)
         self.backgrounds = [
             "Resources/Maps/Background/Desert.png",
             "Resources/Maps/Background/Tuyet1.png",
@@ -96,6 +95,7 @@ class Options:
 
             # Cập nhật và vẽ hiệu ứng chuyển nền (fade mượt)
             self.bg_panel.update_background(self.screen)
+            
 
 
             # --- Panel Background (trái - giữ nguyên) ---
@@ -119,7 +119,9 @@ class Options:
                 mouse_pos=mouse_pos, mouse_click=mouse_click,
                 dt=dt
             )
-
+            self.hide.update(dt)
+            self.hide.draw(self.screen, (1405, 700), scale=1.1)
+            
             # --- Panel Hiệu ứng (giữ nguyên) ---
             self.effect_panel.draw(
                 self.screen, 470, 600, 500, 150,

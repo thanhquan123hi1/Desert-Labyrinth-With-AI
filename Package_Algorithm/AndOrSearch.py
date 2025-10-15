@@ -91,5 +91,3 @@ class AndOrSearch:
             self.Dodai_duongdi = len(plan)
         self.execution_time = time.time() - start_time
         return self.list_tt_duyet, self.duong_di
-
-
