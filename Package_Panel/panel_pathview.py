@@ -6,19 +6,19 @@ import math
 
 class PathViewPanel:
     def __init__(self):
-        # --- Font & UI ---
+        # Font & UI 
         self.font_title = pygame.font.Font("Resources/Font/pixel3.ttf", 34)
         self.font_text = pygame.font.Font("Resources/Font/viethoa2.otf", 18)
         self.ui = UIManager()
 
-        # --- Trạng thái hiển thị ---
+        # Trạng thái hiển thị 
         self.visible = False
         self.path = []
         self.map_model = None
         self.info = {}
         self.algorithm_name = "Unknown"
 
-        # --- Nút Close (3 trạng thái) ---
+        # Nút Close (3 trạng thái
         self.close_nor = pygame.image.load("Resources/Menu/buttons/close_nor.png").convert_alpha()
         self.close_hover = pygame.image.load("Resources/Menu/buttons/close_hover.png").convert_alpha()
         self.close_pressed = pygame.image.load("Resources/Menu/buttons/close_pressed.png").convert_alpha()
@@ -33,16 +33,15 @@ class PathViewPanel:
             self.close_pressed, (int(self.close_pressed.get_width() * scale), int(self.close_pressed.get_height() * scale))
         )
 
-        # --- Màu nền ---
+        # Màu nền 
         self.panel_color = (10, 25, 60)
         self.border_color = (80, 100, 160)
 
-        # --- Scroll ---
+        # Scroll 
         self.scroll_offset = 0
         self.max_scroll = 0
         self.scroll_speed = 20
 
-    # ------------------------------------------------------------
     def toggle(self, map_model=None, path=None, info=None, algorithm_name="Unknown", start=None, goal=None):
         """Bật/tắt hiển thị và cập nhật dữ liệu"""
         if map_model and path is not None:
@@ -63,8 +62,6 @@ class PathViewPanel:
             self.scroll_offset -= event.y * self.scroll_speed
             self.scroll_offset = max(0, min(self.scroll_offset, self.max_scroll))
 
-    # ------------------------------------------------------------
-    # ------------------------------------------------------------
     def draw(self, surface, mouse_pos, mouse_click):
         """Vẽ overlay show path"""
         if not self.visible:
@@ -74,19 +71,19 @@ class PathViewPanel:
         x = RES[0] // 2 - width // 2
         y = RES[1] // 2 - height // 2
 
-        # --- Nền panel ---
+        # Nền panel 
         panel_surf = pygame.Surface((width, height), pygame.SRCALPHA)
         pygame.draw.rect(panel_surf, self.panel_color, (0, 0, width, height), border_radius=18)
         pygame.draw.rect(panel_surf, self.border_color, (0, 0, width, height), 4, border_radius=18)
         surface.blit(panel_surf, (x, y))
 
-        # --- Tiêu đề + tên thuật toán ---
+        # Tiêu đề + tên thuật toán 
         title = self.font_title.render("Detail", False, (255, 255, 255))
         alg_name = self.font_text.render(f"Thuật toán: {self.algorithm_name}", True, (255, 230, 180))
         surface.blit(title, (x + width // 2 - title.get_width() // 2, y + 15))
         surface.blit(alg_name, (x + 40, y + 60))
 
-        # --- Nút close ---
+        # Nút close 
         close_img = self.close_nor
         close_rect = close_img.get_rect(center=(x + width - 40, y + 45))
         dist = math.hypot(mouse_pos[0] - close_rect.centerx, mouse_pos[1] - close_rect.centery)
@@ -99,7 +96,7 @@ class PathViewPanel:
             close_img = self.close_hover
         surface.blit(close_img, close_rect)
 
-        # --- Preview đường đi ---
+        # Preview đường đi 
         preview_rect = pygame.Rect(x + 35, y + 100, 480, 336)
         pygame.draw.rect(surface, (30, 40, 80), preview_rect, border_radius=10)
 
@@ -108,14 +105,14 @@ class PathViewPanel:
             map_h = self.map_model.map_data.height * TILE_SIZE
             temp = pygame.Surface((map_w, map_h), pygame.SRCALPHA)
 
-            # --- Vẽ bản đồ nền ---
+            # Vẽ bản đồ nền 
             old_offx, old_offy = self.map_model.offset_x, self.map_model.offset_y
             self.map_model.offset_x = 0
             self.map_model.offset_y = 0
             self.map_model.draw(temp)
             self.map_model.offset_x, self.map_model.offset_y = old_offx, old_offy
 
-            # --- Hiển thị đường đi ---
+            # Hiển thị đường đi 
             if self.algorithm_name == "NoOBS":
                 # Mỗi belief là một tập toạ độ => vẽ nhạt dần
                 n = len(self.path)
@@ -144,7 +141,7 @@ class PathViewPanel:
                 if len(pts) > 1:
                     pygame.draw.lines(temp, (0, 255, 255), False, pts, 3)
 
-            # --- Thu nhỏ ---
+            # Thu nhỏ 
             scale_x = preview_rect.width / map_w
             scale_y = preview_rect.height / map_h
             scale_factor = min(scale_x, scale_y)
@@ -155,10 +152,10 @@ class PathViewPanel:
             offset_y = preview_rect.y + (preview_rect.height - new_h) // 2
             surface.blit(mini, (offset_x, offset_y))
 
-        # --- Thông tin tổng quát ---
+        # Thông tin tổng quát 
         info_texts = []
 
-        # 1️⃣ Hiển thị start / goal
+        # Hiển thị start / goal
         if self.algorithm_name == "NoOBS":
             starts = getattr(self, "start", [])
             goals = getattr(self, "goal", [])
@@ -168,7 +165,7 @@ class PathViewPanel:
             info_texts.append(("Trạng thái bắt đầu", str(getattr(self, "start", "-")), (120, 200, 255)))
             info_texts.append(("Trạng thái đích", str(getattr(self, "goal", "-")), (255, 230, 100)))
 
-        # 2️⃣ Các chỉ số thống kê
+        # Các chỉ số thống kê
         info_texts.extend([
             ("Độ dài đường đi", str(self.info.get('Độ dài đường đi: ', len(self.path))), (255, 255, 255)),
             ("Số TT đã duyệt", str(self.info.get('Số trạng thái đã duyệt: ', '-')), (255, 255, 255)),
@@ -177,19 +174,19 @@ class PathViewPanel:
             ("Kết quả", self.info.get('Kết quả', '—'), (0, 255, 0) if "Thành công" in self.info.get('Kết quả', '') else (255, 80, 80)),
         ])
 
-        # 3️⃣ Vẽ text
+        # Vẽ text
         for i, (label, value, color) in enumerate(info_texts):
             text = f"{label}: {value}"
             txt = self.font_text.render(text, True, color)
             surface.blit(txt, (x + 550, y + 70 + i * 25))
 
-        # --- Danh sách tọa độ ---
+        # Danh sách tọa độ 
         if not self.path:
             msg = self.font_text.render("Không có dữ liệu đường đi.", True, (160, 195, 217))
             surface.blit(msg, (x + 600, y + 280))
             return
 
-        # --- Hiển thị khác nhau cho NoOBS ---
+        # Hiển thị khác nhau cho NoOBS 
         start_y = y + 270 - self.scroll_offset
         row_h = 26
         self.max_scroll = max(0, len(self.path) * row_h - 240)
@@ -212,7 +209,7 @@ class PathViewPanel:
                 txt = self.font_text.render(text, True, (255, 255, 255))
                 surface.blit(txt, (x + 550, row_y))
 
-        # --- Thanh cuộn ---
+        # Thanh cuộn 
         if self.max_scroll > 0:
             scroll_h = 240
             bar_h = max(30, int(scroll_h * (scroll_h / (len(self.path) * row_h))))
@@ -220,6 +217,6 @@ class PathViewPanel:
             pygame.draw.rect(surface, (150, 200, 250), (x + width - 25, bar_y, 6, bar_h), border_radius=4)
             pygame.draw.rect(surface, (60, 90, 150), (x + width - 25, y + 270, 6, scroll_h), 2, border_radius=4)
 
-        # --- Viền ngoài ---
+        # Viền ngoài 
         pygame.draw.rect(surface, (100, 150, 220), (x, y, width, height), 3, border_radius=18)
 
