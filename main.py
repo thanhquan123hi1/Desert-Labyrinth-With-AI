@@ -222,9 +222,9 @@ class App:
                         self.enemy_move_idx += 1
                         move_timer = 0.0
                         self.particles.playerStepEffect(e_pos2)
-                    else:
-                        phase = "idle"
-                        self.player.set_state("idle")
+                else:
+                    phase = "idle"
+                    self.player.set_state("idle")
 
 
 
