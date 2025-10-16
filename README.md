@@ -11,6 +11,8 @@ Trò chơi mô phỏng *AI Search Algorithms* trong mê cung bằng Pygame, giú
   - [Màn hình Options](#màn-hình-options)
   - [Màn hình Game](#màn-hình-game)
 - [Các thuật toán hỗ trợ](#các-thuật-toán-hỗ-trợ)
+- [Minh Họa Thuật Toán (GIF)](#minh-họa-thuật-toán-gif)
+- [Tác giả](#tác-giả)
 
 ## Giới thiệu
 
@@ -82,7 +84,6 @@ pip install pygame numpy pytmx matplotlib
 - **START GAME** → bắt đầu trò chơi.  
 - **OPTIONS** → chọn nhân vật, bản đồ, hiệu ứng, nền.  
 - **QUIT** → thoát chương trình.  
-
 ### Màn hình Options
 
 Tại đây bạn có thể tùy chỉnh:
@@ -95,6 +96,8 @@ Tại đây bạn có thể tùy chỉnh:
 | **Effect** | Hiệu ứng môi trường: Sandstorm, Snow, Rain, Leaves, Fireflies |
 
 > Nhấn **Back** để lưu cấu hình và quay lại Menu chính.
+
+ ![Demo Menu Chính](Resources/Gif/Menu-1.gif)
 
 ### Màn hình Game
 
@@ -110,8 +113,47 @@ Tại đây bạn có thể tùy chỉnh:
 | **Uninformed Search** | BFS, DFS |
 | **Informed Search** | Greedy, A* | 
 | **Local Search** | Beam Search, Simulated Annealing |
-| **Complex Environment** | Nondeterministic Search with Belief States, And-Or Search |
+| **Complex Environment** | Nondeterministic Search with Nondeterministic Observation, And-Or Search |
 | **CSP** | Backtracking, Forward Checking |
-| **Adversarial Search** | *(đang phát triển)* | 
+| **Adversarial Search** | MiniMax, AlphaBeta | 
 
+## Minh Họa Thuật Toán (GIF)
+  - **Uninformed Search**:
+    *BFS*
+     ![BFS](Resources/Gif/BFS-1.gif)
+    *DFS*
+     ![DFS](Resources/Gif/DFS-1.gif)
+    
+  - **Informed Search**:
+    *Greedy Search*
+    ![Greedy Search](Resources/Gif/Greedy-1.gif)
+    *A*
+    ![A*](Resources/Gif/AStar-1.gif)
+    
+  - **Local Search**:
+    *Beam Search*
+    ![Beam Search](Resources/Gif/Beam-1.gif)
+    *Simulated Annealing*
+    ![Simulated Annealing](Resources/Gif/SA-1.gif)
+    
+  - **Complex Environment**:
+    *Nondeterministic Search with Nondeterministic Observation*
+    ![NoOBS](Resources/Gif/NoOBS-1.gif)
+    *And-Or Search*
+    ![And-Or](Resources/Gif/AndOr-1.gif)
+    
+  - **CSP**:
+    *Backtracking*
+    ![Backtracking](Resources/Gif/BackTrack-1.gif)
+    *Forward Checking*
+    ![Forward Checking](Resources/Gif/Forward-1.gif)
+    
+  - **Adversarial Search**:
+    *MiniMax*
+    ![MiniMax](Resources/Gif/MiniMax-1.gif)
+    *AlphaBeta*
+    ![AlphaBeta](Resources/Gif/AlphaBeta-1.gif)
+    
 ## Tác giả 
+  **Phùng Lê Thanh Quân**: [GitHub](https://github.com/thanhquan123hi1).
+  **Lê Hữu Văn**
