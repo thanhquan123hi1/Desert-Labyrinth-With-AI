@@ -119,41 +119,54 @@ Tại đây bạn có thể tùy chỉnh:
 
 ## Minh Họa Thuật Toán (GIF)
   - **Uninformed Search**:
+    
     *BFS*
      ![BFS](Resources/Gif/BFS-1.gif)
+    
     *DFS*
      ![DFS](Resources/Gif/DFS-1.gif)
     
   - **Informed Search**:
+    
     *Greedy Search*
     ![Greedy Search](Resources/Gif/Greedy-1.gif)
-    *A*
+    
+    *A\**
     ![A*](Resources/Gif/AStar-1.gif)
     
   - **Local Search**:
+    
     *Beam Search*
     ![Beam Search](Resources/Gif/Beam-1.gif)
+    
     *Simulated Annealing*
     ![Simulated Annealing](Resources/Gif/SA-1.gif)
     
   - **Complex Environment**:
+    
     *Nondeterministic Search with Nondeterministic Observation*
     ![NoOBS](Resources/Gif/NoOBS-1.gif)
+    
     *And-Or Search*
     ![And-Or](Resources/Gif/AndOr-1.gif)
     
   - **CSP**:
+    
     *Backtracking*
     ![Backtracking](Resources/Gif/BackTrack-1.gif)
+    
     *Forward Checking*
     ![Forward Checking](Resources/Gif/Forward-1.gif)
     
   - **Adversarial Search**:
+
     *MiniMax*
     ![MiniMax](Resources/Gif/MiniMax-1.gif)
+    
     *AlphaBeta*
     ![AlphaBeta](Resources/Gif/AlphaBeta-1.gif)
     
 ## Tác giả 
   **Phùng Lê Thanh Quân**: [GitHub](https://github.com/thanhquan123hi1).
-  **Lê Hữu Văn**
+  
+  **Lê Hữu Văn**: [GitHub](https://github.com/vanlh25).
