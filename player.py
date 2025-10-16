@@ -1,6 +1,6 @@
 import pygame
 from settings import TILE_SIZE
-
+from Package_Animation import SpriteSheetAnimation
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos, *group, 
                  sprite_idle=("Resources/Characters/idle_torchman.png", 96, 96, 6),
@@ -109,11 +109,7 @@ class Player(pygame.sprite.Sprite):
         return False
 
     def animate(self, dt):
-        if self.direction.length_squared() > 0:
-            self.state = "run"
-        else:
-            self.state = "idle"
-
+        """Cập nhật animation dựa trên self.state, không phụ thuộc bàn phím."""
         frames = self.animations[self.state]
         self.animation_timer += dt
         if self.animation_timer >= self.animation_speeds[self.state]:
@@ -124,8 +120,51 @@ class Player(pygame.sprite.Sprite):
         if not self.facing_right:
             frame = pygame.transform.flip(frame, True, False)
         self.image = frame
+        
+    def set_state(self, state, facing=None):
+        """Cập nhật trạng thái idle/run và hướng nếu có."""
+        if state in ("idle", "run"):
+            self.state = state
+        if facing is not None:
+            self.facing_right = facing
 
-    def update(self, dt, collision_matrix):
-        self.handle_input()
-        self.move_with_collision(dt, collision_matrix)
-        self.animate(dt)
+
+
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, pos):
+        super().__init__()
+        self.sheet = pygame.image.load("Resources/Characters/run_red.png").convert_alpha()
+        self.frame_w, self.frame_h = 96, 96
+        self.frame_count = 6
+        self.frames = [
+            pygame.transform.scale(
+                self.sheet.subsurface(pygame.Rect(i * self.frame_w, 0, self.frame_w, self.frame_h)), (64, 64)
+            )
+            for i in range(self.frame_count)
+        ]
+        self.image = self.frames[0]
+        self.rect = self.image.get_rect(center=pos)
+        self.frame_index = 0
+        self.timer = 0
+        self.animation_speed = 0.1
+        self.facing_right = True
+
+    def update(self, dt, start_pos, end_pos, t):
+        # --- Di chuyển mượt ---
+        x = start_pos[0] + (end_pos[0] - start_pos[0]) * t
+        y = start_pos[1] + (end_pos[1] - start_pos[1]) * t
+        self.rect.center = (x, y)
+
+        # --- Cập nhật hướng ---
+        self.facing_right = end_pos[0] >= start_pos[0]
+
+        # --- Cập nhật frame ---
+        self.timer += dt
+        if self.timer >= self.animation_speed:
+            self.timer = 0
+            self.frame_index = (self.frame_index + 1) % len(self.frames)
+        frame = self.frames[self.frame_index]
+        if not self.facing_right:
+            frame = pygame.transform.flip(frame, True, False)
+        self.image = frame
+

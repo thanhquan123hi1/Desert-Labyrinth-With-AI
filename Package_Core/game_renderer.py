@@ -39,6 +39,9 @@ class GameRenderer:
         
         self.enemy_pos = None
         self.enemy_pixel = None
+        self.enemy_sprite = None
+        self.enemy_group = None
+
 
     # ==========================================================
     def set_adversarial(self, player_path=None, enemy_path=None):
@@ -78,54 +81,97 @@ class GameRenderer:
         # --- Nếu là adversarial ---
         if self.is_adversarial and (self.adv_player_path or self.adv_enemy_path):
             self.draw_adversarial(dt)
+            # Vẽ player và enemy sprite
+            if hasattr(self, "player") and self.player:
+                self.surface.blit(self.player.image, self.player.rect)
+            if self.enemy_sprite:
+                self.surface.blit(self.enemy_sprite.image, self.enemy_sprite.rect)
         else:
             self.player.update(dt, self.map_model.collision_matrix)
             self.player_group.draw(self.surface)
 
+
     # ==========================================================
     def draw_adversarial(self, dt):
-        """Vẽ Player & Enemy cùng di chuyển (không glow)"""
+        """Vẽ Player & Enemy bằng sprite animation (chuẩn, mượt, flip hướng)"""
         if not self.adv_player_path:
             return
 
         self.adv_step += dt / self.adv_speed
         idx = int(self.adv_step)
-        idx = min(idx, len(self.adv_player_path) - 1)
-        idx_enemy = min(idx, len(self.adv_enemy_path) - 1) if self.adv_enemy_path else idx
+        if idx >= len(self.adv_player_path) - 1:
+            # Nếu player tới đích
+            final_r, final_c = self.adv_player_path[-1]
+            self.player.rect.center = (
+                self.offset[0] + final_c * TILE_SIZE + TILE_SIZE // 2,
+                self.offset[1] + final_r * TILE_SIZE + TILE_SIZE // 2,
+            )
+            self.player.state = "idle"
+            if self.enemy_sprite:
+                # Giữ enemy tại frame cuối, không biến mất
+                er, ec = self.adv_enemy_path[-1]
+                self.enemy_sprite.rect.center = (
+                    self.offset[0] + ec * TILE_SIZE + TILE_SIZE // 2,
+                    self.offset[1] + er * TILE_SIZE + TILE_SIZE // 2,
+                )
+            return
 
-        pr, pc = self.adv_player_path[idx]
-        px = self.offset[0] + pc * TILE_SIZE + TILE_SIZE // 2
-        py = self.offset[1] + pr * TILE_SIZE + TILE_SIZE // 2
+        t = self.adv_step - idx
 
-        er, ec = self.adv_enemy_path[idx_enemy] if self.adv_enemy_path else (pr, pc)
-        ex = self.offset[0] + ec * TILE_SIZE + TILE_SIZE // 2
-        ey = self.offset[1] + er * TILE_SIZE + TILE_SIZE // 2
+        # --- Player ---
+        pr1, pc1 = self.adv_player_path[idx]
+        pr2, pc2 = self.adv_player_path[idx + 1]
+        start_p = (
+            self.offset[0] + pc1 * TILE_SIZE + TILE_SIZE // 2,
+            self.offset[1] + pr1 * TILE_SIZE + TILE_SIZE // 2,
+        )
+        end_p = (
+            self.offset[0] + pc2 * TILE_SIZE + TILE_SIZE // 2,
+            self.offset[1] + pr2 * TILE_SIZE + TILE_SIZE // 2,
+        )
 
-        # Đường đi player (trắng-xanh)
+        self.player.rect.center = (
+            start_p[0] + (end_p[0] - start_p[0]) * t,
+            start_p[1] + (end_p[1] - start_p[1]) * t,
+        )
+        # Xác định hướng dựa theo tọa độ di chuyển
+        facing_right = end_p[0] >= start_p[0]
+        self.player.set_state("run", facing=facing_right)
+        self.player.animate(dt)
+
+        # --- Enemy ---
+        if self.adv_enemy_path and idx < len(self.adv_enemy_path) - 1:
+            er1, ec1 = self.adv_enemy_path[idx]
+            er2, ec2 = self.adv_enemy_path[idx + 1]
+            start_e = (
+                self.offset[0] + ec1 * TILE_SIZE + TILE_SIZE // 2,
+                self.offset[1] + er1 * TILE_SIZE + TILE_SIZE // 2,
+            )
+            end_e = (
+                self.offset[0] + ec2 * TILE_SIZE + TILE_SIZE // 2,
+                self.offset[1] + er2 * TILE_SIZE + TILE_SIZE // 2,
+            )
+            if self.enemy_sprite:
+                self.enemy_sprite.update(dt, start_e, end_e, t)
+
+        # --- Vẽ đường đi ---
         if len(self.adv_player_path) > 1:
             pts_p = [(self.offset[0] + c * TILE_SIZE + TILE_SIZE // 2,
-                      self.offset[1] + r * TILE_SIZE + TILE_SIZE // 2)
-                     for r, c in self.adv_player_path]
-            pygame.draw.lines(self.surface, (200, 255, 255), False, pts_p, 3)
-
-        # Đường đi enemy (đỏ)
+                    self.offset[1] + r * TILE_SIZE + TILE_SIZE // 2)
+                    for r, c in self.adv_player_path]
+            pygame.draw.lines(self.surface, (200, 255, 255), False, pts_p, 2)
         if len(self.adv_enemy_path) > 1:
             pts_e = [(self.offset[0] + c * TILE_SIZE + TILE_SIZE // 2,
-                      self.offset[1] + r * TILE_SIZE + TILE_SIZE // 2)
-                     for r, c in self.adv_enemy_path]
-            pygame.draw.lines(self.surface, (255, 80, 80), False, pts_e, 3)
+                    self.offset[1] + r * TILE_SIZE + TILE_SIZE // 2)
+                    for r, c in self.adv_enemy_path]
+            pygame.draw.lines(self.surface, (255, 80, 80), False, pts_e, 2)
 
-        # Player
-        pygame.draw.circle(self.surface, (255, 255, 255), (int(px), int(py)), TILE_SIZE // 3)
-        # Enemy
-        pygame.draw.circle(self.surface, (255, 50, 50), (int(ex), int(ey)), TILE_SIZE // 3)
+        # --- Vẽ sprite ---
+        self.surface.blit(self.player.image, self.player.rect)
+        if self.enemy_sprite:
+            self.surface.blit(self.enemy_sprite.image, self.enemy_sprite.rect)
 
-        # Chữ P và E
-        font = pygame.font.Font(None, 20)
-        p_text = font.render("P", True, (0, 0, 0))
-        e_text = font.render("E", True, (0, 0, 0))
-        self.surface.blit(p_text, (px - 6, py - 8))
-        self.surface.blit(e_text, (ex - 6, ey - 8))
+
 
     # ==========================================================
     def draw_cells_energy(self, cells, base_color=(80, 200, 255)):
@@ -195,3 +241,8 @@ class GameRenderer:
         font = pygame.font.Font(None, 20)
         e_text = font.render("E", True, (0, 0, 0))
         self.surface.blit(e_text, (x - 6, y - 8))
+        
+    def draw_enemy_sprite(self):
+        """Vẽ enemy nếu có sprite"""
+        if hasattr(self, "enemy_sprite") and self.enemy_sprite:
+            self.surface.blit(self.enemy_sprite.image, self.enemy_sprite.rect)

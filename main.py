@@ -162,6 +162,11 @@ class App:
                     lerp = lambda a, b, t: a + (b - a) * t
                     x = lerp(start_pos[0], end_pos[0], t)
                     y = lerp(start_pos[1], end_pos[1], t)
+                    
+                    # --- Cập nhật hướng và trạng thái khi đang di chuyển ---
+                    facing_right = end_pos[0] >= start_pos[0]
+                    self.player.set_state("run", facing=facing_right)
+
                     self.player.rect.center = (x, y)
 
                     # Khi hoàn tất một bước
@@ -171,7 +176,8 @@ class App:
                         self.particles.playerStepEffect(end_pos)
                 else:
                     phase = "idle"
-                    self.player.state = "idle"
+                    self.player.set_state("idle")
+
                     
             elif phase == "adversarial_move":
                 if move_idx < len(path) - 1 and self.enemy_move_idx < len(self.enemy_path) - 1:
@@ -199,34 +205,27 @@ class App:
                         er2 * TILE_SIZE + self.map_offset[1] + TILE_SIZE // 2
                     )
 
-                    # --- Cập nhật nội suy ---
+                    # --- Interpolation ---
                     move_timer += dt
                     t = min(move_timer / MOVE_INTERVAL, 1.0)
-                    lerp = lambda a, b, t: a + (b - a) * t
-
-                    # Player sprite
-                    px = lerp(s_pos[0], e_pos[0], t)
-                    py = lerp(s_pos[1], e_pos[1], t)
-                    self.player.rect.center = (px, py)
-
-                    # Enemy marker
-                    ex = lerp(s_pos2[0], e_pos2[0], t)
-                    ey = lerp(s_pos2[1], e_pos2[1], t)
-                    self.renderer.enemy_pos = (
-                        int((ey - self.map_offset[1]) // TILE_SIZE),
-                        int((ex - self.map_offset[0]) // TILE_SIZE)
+                    # --- Cập nhật hướng và trạng thái cho player khi chạy song song enemy ---
+                    facing_right = e_pos[0] >= s_pos[0]
+                    self.player.set_state("run", facing=facing_right)
+                    self.player.rect.center = (
+                        s_pos[0] + (e_pos[0] - s_pos[0]) * t,
+                        s_pos[1] + (e_pos[1] - s_pos[1]) * t,
                     )
+                    self.enemy.update(dt, s_pos2, e_pos2, t)
 
-                    # Hoàn tất bước
                     if t >= 1.0:
                         move_idx += 1
                         self.enemy_move_idx += 1
                         move_timer = 0.0
-                        self.particles.playerStepEffect((ex, ey))
-                else:
-                    phase = "idle"
-                    self.player.state = "idle"
-                    self.renderer.enemy_pos = None
+                        self.particles.playerStepEffect(e_pos2)
+                    else:
+                        phase = "idle"
+                        self.player.set_state("idle")
+
 
 
             # =====================================================
@@ -287,6 +286,18 @@ class App:
                     enemy_path = getattr(search, "duong_di_enemy", [])
                     self.renderer.reset_effects()   
                     self.renderer.set_adversarial(player_path, enemy_path)
+                    
+                    # --- Khởi tạo sprite enemy ---
+                    from player import Enemy
+                    enemy_start_pos = (
+                        enemy_path[0][1] * TILE_SIZE + self.map_offset[0] + TILE_SIZE // 2,
+                        enemy_path[0][0] * TILE_SIZE + self.map_offset[1] + TILE_SIZE // 2
+                    )
+                    self.enemy = Enemy(enemy_start_pos)
+                    self.renderer.enemy_sprite = self.enemy
+                    self.renderer.enemy_group = pygame.sprite.GroupSingle(self.enemy)
+
+
 
                     self.enemy_path = enemy_path
                     self.enemy_move_idx = 0
@@ -374,6 +385,7 @@ class App:
             self.history_panel.draw(self.surface, self.solve_history, mouse_pos, mouse_click)
             self.path_panel.draw(self.surface, mouse_pos, mouse_click)
             self.chart_panel.draw(self.surface, mouse_pos, mouse_click)
+            self.renderer.draw_enemy_sprite()
 
             pygame.display.flip()
 
