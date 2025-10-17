@@ -323,13 +323,6 @@ class App:
                     phase = "show_visited"
                     snap_to_start()
 
-                # Lưu kết quả
-                self.alg_panel.selected = None
-                if search:
-                    self.solve_history.append({"algorithm": selected_alg, **info})
-
-
-
                 # Reset hiệu ứng trước khi hiển thị kết quả mới
                 self.renderer.reset_effects()
 
