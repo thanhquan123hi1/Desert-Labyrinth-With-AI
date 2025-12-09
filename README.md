@@ -1,5 +1,19 @@
 # Desert Labyrinth With AI (MazeGame)
 
+![Python](https://img.shields.io/badge/Python-%3E%3D_3.9-blue)
+![Pygame](https://img.shields.io/badge/Library-Pygame-yellow)
+![NumPy](https://img.shields.io/badge/Library-NumPy-013243)
+![PyTMX](https://img.shields.io/badge/Library-PyTMX-orange)
+![Matplotlib](https://img.shields.io/badge/Library-Matplotlib-11557c)
+![Tiled](https://img.shields.io/badge/Tool-Tiled_Map_Editor-lightgrey)
+![VS Code](https://img.shields.io/badge/IDE-VS_Code-007ACC)
+![Algorithm](https://img.shields.io/badge/Algorithm-AI_Search-red)
+![Uninformed Search](https://img.shields.io/badge/Search-Uninformed-red)
+![Informed Search](https://img.shields.io/badge/Search-Informed-red)
+![Local Search](https://img.shields.io/badge/Search-Local-red)
+![CSP](https://img.shields.io/badge/Algorithm-CSP-red)
+![Adversarial Search](https://img.shields.io/badge/Search-Adversarial-red)
+
 Trò chơi mô phỏng *AI Search Algorithms* trong mê cung bằng Pygame, giúp trực quan hóa quá trình tìm đường của các thuật toán AI
 
 ## Mục lục
